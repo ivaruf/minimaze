@@ -53,6 +53,9 @@ minimaze/
     config.js              every tuning number                                  [sim]
     main.js                boot, fixed-step loop, wiring                        [glue]
     levels.js              the mazes, as ASCII grids (§5)                       [sim]
+    store.js               finished mazes and best times                        [ui]
+    sim/gadgets.js         kickers, gears, switches, gates (§5)                 [sim]
+    render/gadgets-mesh.js what the gadgets look like                           [render]
     sim/board.js           parse a level grid -> walls, holes, start, goal      [sim]
     sim/marble.js          integrate, collide, fall, goal (§4)                 [sim]
     input/tilt.js          device orientation -> tilt, calibration, permission  [input]
@@ -70,6 +73,7 @@ minimaze/
   tools/
     vendor-three.mjs       copy + rewrite the three files we ship               [vendor]
     make-icons.py          Pillow, procedural: a marble over a hole             [assets]
+    check-levels.mjs       every maze finishable, no kicker traps (§5)         [sim]
     audio/*.rb             the cue compositions                                 [assets]
   README.md, DESIGN.md
 ```
@@ -161,14 +165,41 @@ Hand-authored ASCII in `levels.js`, one string per level, any size:
 #############
 ```
 
-`#` wall, `.` floor, `S` start, `G` goal, `O` hole, `C` checkpoint. More
-glyphs only when a level needs them. The board mesh is generated from this
-grid at load, so a new level is one string and nothing else.
+`#` wall, `.` floor, `S` start, `G` goal, `O` hole. The board mesh is
+generated from this grid at load, so a new level is one string and nothing
+else. `levels.js`'s header is the authoritative glyph list.
 
-**M1 ships about eight**, ordered so the first teaches tilt with no holes at
-all (a five-year-old's first thirty seconds decide whether he keeps going),
-then holes, then corridors along holes, then choices. All levels are open
-from the start, with ticks on the ones you have finished; no locked doors.
+**Gadgets** (owner's ask, 2026-10-07: "gears and switches that can launch
+you in directions"), in `sim/gadgets.js` and drawn by
+`render/gadgets-mesh.js`:
+
+| Glyph | Gadget | Does |
+|---|---|---|
+| `> < ^ v` | kicker | fires the marble that way at `LAUNCH_SPEED` |
+| `@ &` | gear | brass turntable, clockwise / anticlockwise; carries the marble round and flings it off at a tangent; needs the 3×3 round it clear |
+| `*` | switch | flips every gate on the board |
+| `= _` | gate | shut / open at the start; never shuts on the marble, waits until it is clear |
+
+A fall resets every gadget to how the level began, so a fall is always a
+clean retry.
+
+**Kickers can trap.** In a one-wide corridor a kicker is a one-way valve, so
+a pocket whose only exit is a kicker firing back in holds the marble
+forever. `node tools/check-levels.mjs` searches every level as a grid
+puzzle (state = cell × gates flipped) and fails any level that cannot be
+finished, or that has a reachable spot from which the goal cannot be reached
+without deliberately falling. Run it after every level edit. Its model is a
+cautious abstraction of the physics (one cell per move, kicker slides to the
+first solid cell, gears treated as floor), so a pass means "fair", not
+"easy".
+
+**Eighteen mazes**, ordered to teach: two with no holes at all (a
+five-year-old's first minute decides whether he keeps going), then holes,
+then each gadget on its own (kickers 7, gears 10, switches 11) before they
+are combined. All open from the start, picked from a grid of numbered
+blocks, ticked once finished; no locked doors. Progress and best times are
+kept by maze name in `minimaze.progress.v1` (`js/store.js`), so reordering
+levels never moves a tick.
 
 ---
 
@@ -193,7 +224,16 @@ above and in front so the tilt reads.
 - **No per-frame allocation** in the loop: reuse vectors and quaternions.
 
 Menus are DOM over the live board, which stays visible and gently tilting
-behind them, in the board's wood-and-brass palette.
+behind them. They are made of the toy (owner, 2026-10-07: "wooden + brass
+like the maze"): a light plank in a walnut frame with a brass rim, brass
+screws and engraved letters. The wood is the *same* canvas the board is
+textured with, handed to CSS as a data URL, so the cards are cut from the
+board's own plank. Brass is what you press; walnut is the quieter choice
+beside it, the same size.
+
+Flat brass needs a part-metal material (`brassFlat`): at full metalness a
+flat plate mirrors one direction of the room and goes olive. Only curved
+brass, like the goal ring, keeps the true mirror.
 
 ---
 
@@ -222,8 +262,9 @@ Storage: `minimaze.progress.v1` holds finished levels and best times.
   a real phone and a real iPad, inside the arcade and out. The question M1
   answers is whether the marble feels like a marble; nothing else matters
   until it does.
-- **M2 — a game.** The eight levels, level select, the whole hub floor (§7),
-  sounds, icons, manifest, SW.
+- **M1½ — done 2026-10-07, at the owner's ask after a first look.** Gadgets,
+  eighteen mazes, the maze picker, a pause card, the wooden menus.
+- **M2 — a game.** The whole hub floor (§7), sounds, icons, manifest, SW.
 - **M3 — if it earns it.** Blender frame and knobs, checkpoints, moving
   pieces (a swinging gate, a rotating disc), a Norwegian-language toggle for
   the few words on screen.

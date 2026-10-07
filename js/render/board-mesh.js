@@ -13,6 +13,8 @@
  *           the way out is the one bright thing on the board
  *   start   a ring pressed into the wood, so the marble's home is visible
  *
+ * The gadgets (kickers, gears, switches, gates) are gadgets-mesh.js's.
+ *
  * The wood grain is painted onto a canvas at boot. No image files, nothing
  * fetched; it is close to what make-icons.py does for icons.
  *
@@ -23,16 +25,26 @@
 import * as THREE from '../../vendor/three/three.module.js';
 import { WALL_H, BOARD_THICK, PIT_DEPTH, HOLE_R, GOAL_R, BALL_R } from '../config.js';
 
-// Textures are shared by every board and made once.
+// Textures are shared by every board, the gadgets and the menus, made once.
 let woodLight = null;
 let woodDark = null;
 
-export function buildBoard(board, renderer) {
+/*
+ * The two woods, as three textures. Their canvases are also what the menus
+ * are made of: main.js hands them to CSS as data URLs, so the cards are cut
+ * from the same plank as the board rather than from a lookalike gradient.
+ */
+export function woods(renderer) {
   if (!woodLight) {
     const aniso = renderer.capabilities.getMaxAnisotropy();
     woodLight = woodTexture('#d9a86a', '#b07a40', 1, aniso);
     woodDark = woodTexture('#7a4a26', '#4f2d14', 2, aniso);
   }
+  return { light: woodLight, dark: woodDark };
+}
+
+export function buildBoard(board, renderer) {
+  woods(renderer);
 
   const group = new THREE.Group();
   const owned = []; // geometries and materials to dispose with the level

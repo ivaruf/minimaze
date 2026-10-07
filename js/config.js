@@ -68,3 +68,11 @@ if (MAX_SPEED * STEP >= BALL_R * 0.5) {
 export const FALL_TIME = 0.55; // drop into a hole
 export const SPAWN_TIME = 0.3; // pop back out at the start
 export const GOAL_TIME = 0.9; // sink into the goal before the card
+
+// ---- gadgets (sim/gadgets.js) ----
+export const LAUNCH_SPEED = 10; // a kicker's shot, cells/s; under MAX_SPEED
+export const PAD_TRIGGER = 0.3; // centre within this of a pad's centre: fire
+export const PAD_REARM = 0.6; // and it re-arms once the marble is this far off
+export const GEAR_R = 1.35; // a gear covers the 3×3 cells round its hub
+export const GEAR_SPIN = 2.0; // rad/s
+export const GEAR_GRIP = 3.5; // how hard the moving floor drags the marble, 1/s

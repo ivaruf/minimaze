@@ -8,6 +8,9 @@
  * into. No three.js, no DOM: step() takes a state and a tilt and reports what
  * happened as events, and everything else is a view of that.
  *
+ * The board's gadgets (kickers, gears, switches, gates) live in gadgets.js;
+ * this file calls into them at fixed points in the step.
+ *
  * Modes:
  *   spawn  popping out at the start; frozen, the renderer grows it
  *   roll   free
@@ -16,8 +19,10 @@
  */
 
 import * as C from '../config.js';
+import { resetGadgets, turnGears, gearGrip, triggers } from './gadgets.js';
 
 export function createMarble(board) {
+  resetGadgets(board);
   return {
     x: board.start.x,
     z: board.start.z,
@@ -37,6 +42,8 @@ export function respawn(m, board) {
   m.mode = 'spawn';
   m.t = 0;
   m.into = null;
+  // A fall puts the whole board back as the level began: gates, pads, all.
+  resetGadgets(board);
 }
 
 /*
@@ -45,6 +52,7 @@ export function respawn(m, board) {
  * `events` as plain objects so the caller can route them to sound and camera.
  */
 export function step(m, board, tilt, dt, events) {
+  turnGears(board, dt);
   if (m.mode !== 'roll') {
     m.t += dt;
     if (m.mode === 'spawn' && m.t >= C.SPAWN_TIME) {
@@ -72,6 +80,7 @@ export function step(m, board, tilt, dt, events) {
 
   m.vx += ax * dt;
   m.vz += az * dt;
+  gearGrip(m, board, dt);
 
   // Rolling friction is a constant deceleration opposing motion (it cannot
   // reverse it), plus a little proportional drag so the top speed settles.
@@ -93,6 +102,7 @@ export function step(m, board, tilt, dt, events) {
   m.z += m.vz * dt;
 
   collideWalls(m, board, events);
+  triggers(m, board, events);
 
   if (inside(m, board.goal, C.GOAL_R)) {
     m.mode = 'goal';

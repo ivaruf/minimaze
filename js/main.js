@@ -1,20 +1,19 @@
 /*
  * main.js — boot, the fixed-step loop, and the wiring between the parts.
  *
- * M1 (DESIGN.md §8): three mazes, the full physics, tilt + drag + keys +
- * stick, the scene. Menus are a start card and a clear card and no more;
- * the hub's menu floor arrives in M2. The question this build answers is
- * whether the marble feels like a marble.
- *
  * Each frame:
  *   1. read the target tilt from the strongest live source, in SCREEN terms
  *   2. turn it into BOARD terms (the board may be turned 90° on screen)
  *   3. fixed steps at 120 Hz: ease the board toward the target, step the sim
- *   4. route the sim's events (wall knocks to the camera, goal to the card)
- *   5. draw the board at its eased tilt and the marble at its state
+ *   4. route the sim's events (knocks to the camera, kicks to the gadgets,
+ *      the goal to the clear card)
+ *   5. draw the board at its eased tilt, the gadgets and the marble
  *
  * The physics reads the eased tilt, not the target, so what you see the
  * board doing is what is rolling the ball.
+ *
+ * Still to come in M2 (DESIGN.md §7–8): the hub's corner (sound,
+ * fullscreen), sound itself, the way back to the arcade, the service worker.
  */
 
 import * as C from './config.js';
@@ -24,17 +23,13 @@ import { createMarble, step } from './sim/marble.js';
 import * as tilt from './input/tilt.js';
 import * as pointer from './input/pointer.js';
 import { createScene } from './render/scene.js';
-import { buildBoard } from './render/board-mesh.js';
+import { buildBoard, woods } from './render/board-mesh.js';
+import { createGadgets } from './render/gadgets-mesh.js';
 import { createMarbleMesh } from './render/marble-mesh.js';
+import { createUI } from './ui.js';
+import * as store from './store.js';
 
 const canvas = document.getElementById('view');
-const startCard = document.getElementById('start');
-const startBtn = document.getElementById('start-go');
-const clearCard = document.getElementById('clear');
-const clearTime = document.getElementById('clear-time');
-const clearNext = document.getElementById('clear-next');
-const levelName = document.getElementById('level-name');
-const hint = document.getElementById('hint');
 
 let view;
 try {
@@ -42,8 +37,16 @@ try {
 } catch (err) {
   // No WebGL: say so in words rather than leaving a blank brown page.
   document.getElementById('no-gl').hidden = false;
-  startCard.hidden = true;
+  document.getElementById('start').hidden = true;
   throw err;
+}
+
+// The menus are cut from the board's own wood (ui.js, style.css).
+{
+  const w = woods(view.renderer);
+  const root = document.documentElement.style;
+  root.setProperty('--wood-light', `url(${w.light.image.toDataURL('image/jpeg', 0.85)})`);
+  root.setProperty('--wood-dark', `url(${w.dark.image.toDataURL('image/jpeg', 0.85)})`);
 }
 
 const marbleMesh = createMarbleMesh();
@@ -52,6 +55,7 @@ pointer.attach(canvas);
 let levelIndex = 0;
 let board = null;
 let boardMesh = null;
+let gadgets = null;
 let marble = null;
 let playing = false;
 let elapsed = 0; // stopwatch: rolling time only, shown on the clear card
@@ -66,21 +70,53 @@ let visual = 1; // how much of the tilt the drawing shows; see config
 let source = 'none';
 const events = [];
 
+const ui = createUI({
+  levels: LEVELS,
+  onPlay: async (i) => {
+    // Any way into a maze is a tap, and iOS only shares the tilt sensor if
+    // asked from inside one; enable() asks before its first await.
+    const ok = await tilt.enable();
+    loadLevel(i);
+    ui.hideCards();
+    playing = true;
+    if (!ok && !told.size) showHint(matchMedia('(pointer: coarse)').matches ? 'drag' : 'keys');
+  },
+  onResume: () => {
+    ui.hideCards();
+    playing = true;
+  },
+  onRestart: () => {
+    loadLevel(levelIndex);
+    ui.hideCards();
+    playing = true;
+  },
+  onCalibrate: () => tilt.calibrate(),
+  onPause: pause,
+});
+
+function pause() {
+  if (!playing) return;
+  playing = false;
+  ui.showPause(tilt.state.active);
+}
+
 function loadLevel(i) {
   levelIndex = i;
   board = parseBoard(LEVELS[i]);
   if (boardMesh) {
-    view.tilt.remove(boardMesh.group);
+    view.tilt.remove(boardMesh.group, gadgets.group);
     boardMesh.dispose();
+    gadgets.dispose();
   }
+  marble = createMarble(board); // also resets the gadgets, which build reads
   boardMesh = buildBoard(board, view.renderer);
-  view.tilt.add(boardMesh.group);
-  if (!marble) view.tilt.add(marbleMesh.mesh);
-  marble = createMarble(board);
+  gadgets = createGadgets(board, view.renderer);
+  view.tilt.add(boardMesh.group, gadgets.group);
+  if (!marbleMesh.mesh.parent) view.tilt.add(marbleMesh.mesh);
   marbleMesh.snap(marble);
   eased.x = eased.z = 0;
   elapsed = 0;
-  levelName.textContent = `${i + 1}. ${board.name}`;
+  ui.setLevel(i);
   resize();
   tilt.calibrate(); // "level" is however you are holding it right now
 }
@@ -111,6 +147,17 @@ try {
 }
 window.addEventListener('keydown', (e) => {
   if (e.code === 'KeyC') tilt.calibrate();
+  if (e.code === 'Escape' || e.code === 'KeyP') {
+    if (playing) pause();
+    else if (ui.paused()) {
+      ui.hideCards();
+      playing = true;
+    }
+  }
+});
+// A tab put away mid-maze comes back paused, not rolling.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pause();
 });
 
 function readInput() {
@@ -136,21 +183,18 @@ function readInput() {
 }
 
 // One line at the bottom saying which control is live, the first time each
-// one is used, then fading. Not a tutorial: a confirmation.
+// one is used. Not a tutorial: a confirmation.
 const told = new Set();
-let hintTimer = 0;
 function showHint(src) {
   if (told.has(src)) return;
   told.add(src);
-  hint.textContent =
+  ui.hint(
     src === 'device'
       ? 'Tilt to roll. Hold it however you like: that is level.'
       : src === 'drag'
         ? 'Drag to tilt the board.'
-        : 'Arrows tilt the board.';
-  hint.classList.add('show');
-  clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => hint.classList.remove('show'), 3500);
+        : 'Arrows tilt the board.',
+  );
 }
 
 // ---- the loop ----
@@ -181,6 +225,7 @@ function frame(now) {
     if (n === C.MAX_STEPS) acc = 0;
     handleEvents();
   } else {
+    acc = 0;
     // Behind a card the board breathes a little so the scene is alive.
     const t = now / 1000;
     eased.x = Math.sin(t * 0.7) * 0.04;
@@ -192,6 +237,7 @@ function frame(now) {
   visual += (want - visual) * Math.min(1, dt * 4);
   view.tilt.rotation.set(eased.z * visual, 0, -eased.x * visual);
 
+  gadgets.update(marble, dt);
   marbleMesh.place(marble, boardMesh.cupY);
   view.render(dt);
 }
@@ -201,46 +247,27 @@ function handleEvents() {
     const e = events[i];
     if (e.type === 'wall') view.nudge(Math.min(0.04, e.speed * 0.004));
     else if (e.type === 'respawn') marbleMesh.snap(marble);
+    else if (e.type === 'kick') {
+      gadgets.onEvent(e);
+      view.nudge(0.015);
+    }
   }
   events.length = 0;
   // The card waits for the marble to finish sinking into the cup.
-  if (playing && marble.mode === 'goal' && marble.t >= C.GOAL_TIME) showClear();
+  if (playing && marble.mode === 'goal' && marble.t >= C.GOAL_TIME) finishLevel();
 }
 
-function showClear() {
+function finishLevel() {
   playing = false;
-  clearTime.textContent = formatTime(elapsed);
-  const lastLevel = levelIndex === LEVELS.length - 1;
-  clearNext.textContent = lastLevel ? 'From the start' : 'Next maze';
-  clearCard.hidden = false;
-  clearNext.focus();
+  const name = LEVELS[levelIndex].name;
+  const before = store.bestTime(name);
+  const better = store.finish(name, elapsed);
+  ui.showClear(levelIndex, elapsed, before == null ? 'first' : better ? 'best' : 'slower');
 }
 
-function formatTime(s) {
-  const m = Math.floor(s / 60);
-  const r = s - m * 60;
-  return m ? `${m}:${r.toFixed(1).padStart(4, '0')}` : `${r.toFixed(1)} s`;
-}
-
-clearNext.addEventListener('click', () => {
-  clearCard.hidden = true;
-  loadLevel((levelIndex + 1) % LEVELS.length);
-  playing = true;
-});
-
-startBtn.addEventListener('click', async () => {
-  // The permission prompt must be asked from inside this tap (iOS), so
-  // enable() calls it before its first await.
-  const ok = await tilt.enable();
-  startCard.hidden = true;
-  tilt.calibrate();
-  playing = true;
-  if (!ok) showHint(matchMedia('(pointer: coarse)').matches ? 'drag' : 'keys');
-});
-
+// Boot onto the title over the first maze, the marble already at home: the
+// first thing a player sees is the toy, ready.
 loadLevel(0);
-// On the start card the marble already sits at home rather than waiting to
-// swell into being: the first thing a player sees is the toy, ready.
 marble.mode = 'roll';
-startBtn.focus();
+ui.showStart();
 requestAnimationFrame(frame);

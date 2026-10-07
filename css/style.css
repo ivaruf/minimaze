@@ -1,21 +1,29 @@
 /*
- * style.css — MiniMaze's cards and HUD, in the toy's own materials.
+ * style.css — MiniMaze's cards and HUD, made of the toy itself.
  *
- * The toy is a wooden labyrinth: walnut, light birch, a brass ring at the
- * goal. So the panels are dark walnut held translucent over the live board
- * (it keeps gently tilting behind every card), the edges are brass, and the
- * type is a book serif from the system — no web fonts (hub §1), and a
- * real fallback down to `serif`. A card that would look the same over a
- * white page is not finished (hub §2).
+ * Every card is a piece of the maze: a light plank in a walnut frame, a
+ * brass rim inside the frame, a brass screw in each corner, and letters
+ * engraved into the wood. The wood is not imitated here — main.js paints it
+ * once for the board (render/board-mesh.js) and passes the same canvases in
+ * as --wood-light and --wood-dark, so the menus are cut from the same plank
+ * the marble rolls on. Each has a flat colour fallback for the moment
+ * before that runs. Brass is for whatever you press, walnut for the quieter
+ * choice beside it: equal in size, different in metal (hub §2).
  *
- * M1 carries only the start and clear cards. The corner, the volume panel,
- * the way back to the arcade and the landscape-phone layout arrive with the
- * menu floor in M2 (DESIGN.md §7).
+ * No web fonts (hub §1): a book serif from the system with a real fallback
+ * down to `serif`, and no emoji; the tick on a finished maze is drawn.
+ *
+ * The corner, the volume panel and the arcade exit arrive with the M2 menu
+ * floor (DESIGN.md §7); the landscape-phone block at the bottom keeps the
+ * cards from running off a sideways phone in the meantime.
  */
 
 :root {
   --walnut: #1d140d;
-  --panel: rgba(42, 27, 16, 0.78);
+  --ink: #4a2a12; /* engraved letters */
+  --ink-hi: rgba(255, 238, 206, 0.55); /* the lit lower lip of an engraving */
+  --wood-light: linear-gradient(#ddb07a, #d4a46c);
+  --wood-dark: linear-gradient(#7a4a26, #6a3e1f);
   --brass: #d8a640;
   --brass-hi: #f3cf7a;
   --birch: #f2dcb6;
@@ -95,15 +103,72 @@ textarea,
 
 #hud {
   position: absolute;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
-  left: calc(env(safe-area-inset-left, 0px) + 16px);
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 1.05rem;
-  color: var(--muted);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  left: calc(env(safe-area-inset-left, 0px) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  pointer-events: none;
+}
+#hud > * {
+  pointer-events: auto;
 }
 
+/* Brass, engraved: the nameplate screwed to the front of a real labyrinth. */
+.plate {
+  padding: 5px 14px 6px;
+  border-radius: 6px;
+  font: italic 700 1rem var(--serif);
+  color: #3a2408;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.6);
+  background: linear-gradient(#f3cf7a, #c8922f 60%, #b07f26);
+  border: 1px solid #7a5418;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap);
+  height: var(--tap);
+  flex: none;
+  padding: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6d98c, #c8922f 55%, #8f6420);
+  border: 1px solid #6e4a14;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 5px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+/* [hidden] loses to display:flex without this (hub §2, hit three times). */
+.icon-button[hidden] {
+  display: none;
+}
+.icon-button svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: #3a2408;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-button:focus-visible {
+  outline: 3px solid var(--birch);
+  outline-offset: 3px;
+}
+
+/* A walnut tag with a brass edge, hung at the bottom. */
 #hint {
   position: absolute;
   left: 50%;
@@ -111,38 +176,60 @@ textarea,
   transform: translateX(-50%);
   margin: 0;
   max-width: calc(100% - 32px);
-  padding: 8px 16px;
-  border-radius: 999px;
-  background: var(--panel);
-  border: 1px solid rgba(216, 166, 64, 0.35);
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: var(--wood-dark), #6a3e1f;
+  background-size: 300px;
+  border: 2px solid var(--brass);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45);
   font-family: var(--serif);
+  color: var(--birch);
   text-align: center;
   opacity: 0;
   transition: opacity 0.4s;
+  pointer-events: none;
 }
 #hint.show {
   opacity: 1;
 }
 
+/* ---- the cards: a plank in a frame ---- */
+
 .card {
+  --screw: radial-gradient(
+    circle,
+    #fbe3a2 0 1.5px,
+    #d8a640 2.5px 4px,
+    #7a5418 4.5px 5px,
+    transparent 5.5px
+  );
   pointer-events: auto;
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(340px, calc(100% - 32px));
+  width: min(360px, calc(100% - 32px));
   max-height: calc(100% - 32px);
   overflow: auto; /* a safety net on very short viewports, not a plan */
-  padding: 26px 24px 24px;
+  padding: 26px 26px 24px;
   text-align: center;
-  background: var(--panel);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  border: 2px solid var(--brass);
+  border: 12px solid transparent;
   border-radius: 18px;
+  /* Top to bottom: four screws, the plank inside the frame, the frame. */
+  background:
+    var(--screw) left 6px top 6px / 12px 12px no-repeat padding-box,
+    var(--screw) right 6px top 6px / 12px 12px no-repeat padding-box,
+    var(--screw) left 6px bottom 6px / 12px 12px no-repeat padding-box,
+    var(--screw) right 6px bottom 6px / 12px 12px no-repeat padding-box,
+    var(--wood-light) center / 380px padding-box,
+    var(--wood-dark) center / 300px border-box;
   box-shadow:
-    inset 0 0 0 4px rgba(0, 0, 0, 0.25),
-    0 18px 40px rgba(0, 0, 0, 0.55);
+    inset 0 0 0 2px var(--brass),
+    inset 0 4px 10px rgba(60, 30, 5, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.6);
+}
+.card.wide {
+  width: min(520px, calc(100% - 32px));
 }
 
 .card h1,
@@ -150,39 +237,68 @@ textarea,
   margin: 0;
   font-family: var(--serif);
   font-weight: 700;
-  color: var(--brass-hi);
+  color: var(--ink);
   letter-spacing: 0.01em;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
+  /* Engraved: a dark cut with the light catching its lower lip. */
+  text-shadow:
+    0 1px 0 var(--ink-hi),
+    0 -1px 0 rgba(40, 20, 5, 0.35);
 }
 .card h1 {
-  font-size: 2.6rem;
+  font-size: 2.7rem;
 }
 .card h2 {
   font-size: 2rem;
 }
 .card .tag {
-  margin: 8px 0 20px;
+  margin: 6px 0 18px;
   font-family: var(--serif);
   font-style: italic;
-  color: var(--muted);
+  color: #6a4020;
   font-size: 1.05rem;
+  text-shadow: 0 1px 0 var(--ink-hi);
+}
+.card .best {
+  margin: -10px 0 18px;
+  font: 700 1rem var(--serif);
+  color: #8a5a10;
+  text-shadow: 0 1px 0 var(--ink-hi);
 }
 
-/* The way in: a brass plate you press. */
+/* One column of peers, one width (hub §2: a logical group lines up). */
+.actions {
+  display: grid;
+  gap: 10px;
+  justify-items: stretch;
+}
+
+/* Brass for the way in; walnut for the quieter choice, the same size. */
 .go {
   display: block;
   width: 100%;
   min-height: var(--tap);
   padding: 10px 18px;
-  font: 700 1.25rem var(--serif);
+  font: 700 1.2rem var(--serif);
   color: #2a1a0c;
-  background: linear-gradient(#f3cf7a, #c8922f);
-  border: 1px solid #8a5f1c;
-  border-radius: 12px;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.55);
+  background: linear-gradient(#f6d98c, #d8a640 55%, #b8862c);
+  border: 1px solid #7a5418;
+  border-radius: 10px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 3px 0 #6e4a14;
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 3px 0 #6e4a14,
+    0 5px 8px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+}
+.go.alt {
+  color: var(--birch);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+  background: var(--wood-dark) center / 300px, #6a3e1f;
+  border: 2px solid var(--brass);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.25),
+    0 3px 0 #3b2312,
+    0 5px 8px rgba(0, 0, 0, 0.3);
 }
 .go:active {
   transform: translateY(2px);
@@ -190,9 +306,105 @@ textarea,
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 1px 0 #6e4a14;
 }
-.go:focus-visible {
-  outline: 3px solid var(--birch);
+.go[hidden] {
+  display: none;
+}
+.go:focus-visible,
+.tile:focus-visible {
+  outline: 3px solid #2a1a0c;
   outline-offset: 3px;
+}
+
+/* ---- the picker: every maze a numbered walnut block ---- */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+  gap: 10px;
+  margin: 16px 0 18px;
+}
+.tile {
+  position: relative;
+  aspect-ratio: 1;
+  min-height: var(--tap);
+  padding: 0;
+  border-radius: 10px;
+  background: var(--wood-dark) center / 240px, #6a3e1f;
+  border: 2px solid #4f2d14;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.25),
+    0 3px 0 #3b2312;
+  cursor: pointer;
+}
+.tile .n {
+  font: 700 1.45rem var(--serif);
+  color: var(--brass-hi);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
+}
+/* Finished: the block gets a brass face, and a tick drawn in the corner. */
+.tile.done {
+  background: linear-gradient(#f6d98c, #d8a640 55%, #b8862c);
+  border-color: #7a5418;
+}
+.tile.done .n {
+  color: #3a2408;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.6);
+}
+.tile.done::after {
+  content: "";
+  position: absolute;
+  right: 7px;
+  top: 5px;
+  width: 6px;
+  height: 11px;
+  border: solid #2f6b2a;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+.tile:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #3b2312;
+}
+
+/*
+ * A phone on its side: 300–430px tall. Titles shrink, the actions stand side
+ * by side as equals, and the picker spreads into fewer, wider rows. The full
+ * landscape grid (maxgear's shape) comes with the M2 menu floor.
+ */
+@media (orientation: landscape) and (max-height: 500px) {
+  .card {
+    padding: 14px 20px 14px;
+    width: min(520px, calc(100% - 32px));
+  }
+  .card.wide {
+    width: min(720px, calc(100% - 32px));
+  }
+  .card h1 {
+    font-size: 2rem;
+  }
+  .card h2 {
+    font-size: 1.5rem;
+  }
+  .card .tag {
+    margin: 2px 0 10px;
+  }
+  .actions {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  .go {
+    min-height: 40px;
+    padding: 6px 12px;
+    font-size: 1.05rem;
+  }
+  .tiles {
+    grid-template-columns: repeat(9, 1fr);
+    gap: 8px;
+    margin: 10px 0 12px;
+  }
+  .tile {
+    aspect-ratio: auto;
+    height: 44px;
+  }
 }
 
 #crash {

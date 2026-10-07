@@ -9,9 +9,22 @@ the physics and the reasons are in [DESIGN.md](DESIGN.md).
 
 ## Status
 
-**M1**: three mazes, the full physics, all four inputs, the scene. No menus
-beyond a start card and a clear card, no sound, no service worker, no
-manifest yet; those are M2 (DESIGN.md §8). Not deployed.
+Eighteen mazes with kickers, gears, switches and gates; a maze picker with
+ticks and best times; a pause card; wooden menus. No sound, no service
+worker, no manifest, no arcade exit yet; those are M2 (DESIGN.md §8). Not
+deployed.
+
+## Levels
+
+Drawn as text in `js/levels.js` (its header lists the glyphs). After any
+edit:
+
+```sh
+node tools/check-levels.mjs
+```
+
+It proves every maze can be finished and that no kicker can trap the marble,
+and exits non-zero if not.
 
 ## Running
 

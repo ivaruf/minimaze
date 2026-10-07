@@ -20,24 +20,55 @@
     <canvas id="view" aria-label="The maze board"></canvas>
 
     <div id="ui">
-      <div id="hud">
-        <span id="level-name"></span>
+      <div id="hud" hidden>
+        <span id="level-name" class="plate"></span>
+        <!-- The menu plate: three bars, not a gear, because it holds the way
+             back into the maze as well as the settings (hub §2). The glyph is
+             the hub's exact path. Sound and fullscreen join it in M2. -->
+        <button id="menu-btn" class="icon-button" type="button" aria-label="Menu" title="Menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
       </div>
       <p id="hint" aria-live="polite"></p>
 
-      <!-- M1: one card to start (it is also the tap iOS needs before it will
-           share the tilt sensor) and one to say the marble is home. The
-           hub's full menu floor arrives in M2 (DESIGN.md §7). -->
-      <section id="start" class="card">
+      <!-- Getting into a maze is always a tap, which is also the tap iOS
+           needs before it will share the tilt sensor (input/tilt.js). -->
+      <section id="start" class="card" hidden>
         <h1>MiniMaze</h1>
         <p class="tag">Tilt the board. Mind the holes.</p>
-        <button id="start-go" class="go" type="button">Roll!</button>
+        <div class="actions">
+          <button id="start-go" class="go" type="button">Roll!</button>
+          <button id="start-pick" class="go alt" type="button">Pick a maze</button>
+        </div>
+      </section>
+
+      <section id="picker" class="card wide" hidden>
+        <h2>Pick a maze</h2>
+        <div id="picker-tiles" class="tiles"></div>
+        <div class="actions">
+          <button id="picker-back" class="go alt" type="button">Back</button>
+        </div>
+      </section>
+
+      <section id="pause" class="card" hidden>
+        <h2>Paused</h2>
+        <p class="tag">The marble waits where you left it.</p>
+        <div class="actions">
+          <button id="pause-resume" class="go" type="button">Keep rolling</button>
+          <button id="pause-level" class="go alt" type="button" hidden>Level the board</button>
+          <button id="pause-restart" class="go alt" type="button">Start this maze over</button>
+          <button id="pause-pick" class="go alt" type="button">Pick a maze</button>
+        </div>
       </section>
 
       <section id="clear" class="card" hidden>
         <h2>Home!</h2>
         <p class="tag">Rolled in <span id="clear-time"></span></p>
-        <button id="clear-next" class="go" type="button">Next maze</button>
+        <p id="clear-best" class="best" hidden></p>
+        <div class="actions">
+          <button id="clear-next" class="go" type="button">Next maze</button>
+          <button id="clear-pick" class="go alt" type="button">Pick a maze</button>
+        </div>
       </section>
 
       <section id="no-gl" class="card" hidden>

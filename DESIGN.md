@@ -210,7 +210,7 @@ means the route exists; riding the gear is the player's job.
 
 **Eighteen mazes**, ordered to teach: two with no holes at all (a
 five-year-old's first minute decides whether he keeps going), then holes,
-then each gadget on its own (kickers 7, gears 10, switches 11) before they
+then each gadget on its own (kickers from 7, gears from 11, switches from 13) before they
 are combined. All open from the start, picked from a grid of numbered
 blocks, ticked once finished; no locked doors. Progress and best times are
 kept by maze name in `minimaze.progress.v1` (`js/store.js`), so reordering

@@ -175,23 +175,38 @@ you in directions"), in `sim/gadgets.js` and drawn by
 
 | Glyph | Gadget | Does |
 |---|---|---|
-| `> < ^ v` | kicker | fires the marble that way at `LAUNCH_SPEED` |
-| `@ &` | gear | brass turntable, clockwise / anticlockwise; carries the marble round and flings it off at a tangent; needs the 3×3 round it clear |
-| `*` | switch | flips every gate on the board |
+| `> < ^ v` | kicker | throws the marble that way, through the air over the next two cells (holes there do not catch it), landing in the third with half its speed |
+| `@ &` | gear | brass turntable, clockwise / anticlockwise, with an open hub that is a real hole; grips hard, so you ride it round rather than roll across; needs the 3×3 round it clear |
+| `*` | switch | flips every gate and reverses every gear |
 | `= _` | gate | shut / open at the start; never shuts on the marble, waits until it is clear |
+
+**Every gadget must be needed** (owner, 2026-10-07, on the first gadget
+levels: "a lot of the levels allow you to just go around the gears and
+whatnot — you don't really have to engage with the mechanics"). That
+first version made kickers mere speed boosts and gears floor ornaments, and
+nothing a player could not do by tilting. So each kind now does one thing
+tilt cannot: a kicker crosses a **trench** of holes, a gear is the only
+floor across a **walled band** and cannot be cut through the middle, a
+switch opens the **gate** in front of the goal. The checker enforces it
+(below).
 
 A fall resets every gadget to how the level began, so a fall is always a
 clean retry.
 
-**Kickers can trap.** In a one-wide corridor a kicker is a one-way valve, so
-a pocket whose only exit is a kicker firing back in holds the marble
-forever. `node tools/check-levels.mjs` searches every level as a grid
-puzzle (state = cell × gates flipped) and fails any level that cannot be
-finished, or that has a reachable spot from which the goal cannot be reached
-without deliberately falling. Run it after every level edit. Its model is a
-cautious abstraction of the physics (one cell per move, kicker slides to the
-first solid cell, gears treated as floor), so a pass means "fair", not
-"easy".
+**The checker.** `node tools/check-levels.mjs` searches every level as a
+grid puzzle (state = cell × gates flipped) and fails it unless:
+
+- it can be finished;
+- no reachable spot is a trap, i.e. one from which the goal cannot be
+  reached without deliberately falling (a kicker in a one-wide corridor is a
+  one-way door);
+- every kind of gadget on the board is needed: with kickers or switches
+  turned to plain floor, or gears turned to holes, it must be impossible.
+
+Run it after every level edit. Its model of a throw (fly two, land in the
+third, slide on) matches `HOP_TIME` in config.js, so change them together.
+It treats a gear's ring as floor and does not model the spin, so a pass
+means the route exists; riding the gear is the player's job.
 
 **Eighteen mazes**, ordered to teach: two with no holes at all (a
 five-year-old's first minute decides whether he keeps going), then holes,

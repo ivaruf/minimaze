@@ -13,10 +13,12 @@
  *   FALL   slide to the hole's centre while dropping, accelerating, into
  *          the dark under the board.
  *   GOAL   the same drop, ending at rest on the lit floor of the cup.
+ *   HOP    after a kicker, a parabola over the flight; the shadow on the
+ *          board below is what makes it read as a jump.
  */
 
 import * as THREE from '../../vendor/three/three.module.js';
-import { BALL_R, PIT_DEPTH, FALL_TIME, SPAWN_TIME, GOAL_TIME } from '../config.js';
+import { BALL_R, PIT_DEPTH, FALL_TIME, SPAWN_TIME, GOAL_TIME, HOP_TIME, HOP_HEIGHT } from '../config.js';
 
 export function createMarbleMesh() {
   const geo = new THREE.SphereGeometry(BALL_R, 48, 32);
@@ -40,6 +42,11 @@ export function createMarbleMesh() {
     let z = m.z;
     let y = BALL_R;
     let s = 1;
+
+    if (m.air > 0) {
+      const u = 1 - m.air / HOP_TIME;
+      y += 4 * HOP_HEIGHT * u * (1 - u);
+    }
 
     if (m.mode === 'spawn') {
       const t = Math.min(1, m.t / SPAWN_TIME);

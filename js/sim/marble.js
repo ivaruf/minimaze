@@ -30,6 +30,7 @@ export function createMarble(board) {
     vz: 0,
     mode: 'spawn',
     t: 0,
+    air: 0, // seconds of flight left after a kicker; 0 on the ground
     // The hole or cup being fallen into, for the renderer's drop animation.
     into: null,
   };
@@ -39,6 +40,7 @@ export function respawn(m, board) {
   m.x = board.start.x;
   m.z = board.start.z;
   m.vx = m.vz = 0;
+  m.air = 0;
   m.mode = 'spawn';
   m.t = 0;
   m.into = null;
@@ -63,6 +65,22 @@ export function step(m, board, tilt, dt, events) {
       events.push({ type: 'respawn' });
     }
     return;
+  }
+
+  // In flight: straight line, no tilt, no friction, no gear, and nothing
+  // on the floor can catch it. Walls are tall enough to stop it anyway.
+  if (m.air > 0) {
+    m.air -= dt;
+    m.x += m.vx * dt;
+    m.z += m.vz * dt;
+    collideWalls(m, board, events);
+    if (m.air <= 0) {
+      m.air = 0;
+      m.vx *= C.LAND_KEEP;
+      m.vz *= C.LAND_KEEP;
+      events.push({ type: 'land' });
+    }
+    return; // holes and pads are checked from the next step, on the ground
   }
 
   const g = C.GRAVITY * C.ROLL_FACTOR;

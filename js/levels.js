@@ -4,22 +4,26 @@
  *   #  wall          S  start          O  hole
  *   .  floor         G  goal           (space is floor too)
  *
- *   > < ^ v   kicker: fires the marble that way
- *   @ &       gear, clockwise / anticlockwise from above; the 3×3 round it
- *             must be clear floor
- *   *         switch: flips every gate on the board
+ *   > < ^ v   kicker: throws the marble that way, over the next two cells
+ *             (holes there do not catch it) to land in the third
+ *   @ &       gear, clockwise / anticlockwise from above; its hub is a hole,
+ *             and the 3×3 round it must be clear floor
+ *   *         switch: flips every gate and reverses every gear
  *   = _       gate, shut / open at the start
  *
  * Anything outside the grid counts as wall (sim/board.js), so a level that
  * forgets its border still cannot lose the marble off the edge. The 3D board
  * is generated from these strings: a new level is one entry here and nothing
  * else — then run `node tools/check-levels.mjs`, which proves it can be
- * finished and that no kicker can trap the marble in a pocket.
+ * finished, that no kicker can trap the marble in a pocket, and that every
+ * kind of gadget on the board is NEEDED. A gadget you can roll around is
+ * decoration, and the owner called that out: trenches only a kicker
+ * crosses, gears in walled bands, goals behind gates.
  *
  * The order teaches. The first two have no holes, because a five-year-old's
  * first minute is for learning that tilting rolls the ball. Each gadget then
- * gets a level to itself before it is combined with anything: kickers at 7,
- * gears at 10, switches at 11.
+ * gets levels to itself before it is combined with anything: kickers from 7,
+ * gears from 11, switches from 13, then all of them together.
  */
 
 export const LEVELS = [
@@ -102,53 +106,75 @@ export const LEVELS = [
 #############`,
   },
   {
-    name: 'Kick',
+    name: 'Hop',
     grid: `
-#############
-#S.>........#
-###########.#
-#.........<.#
-#.###########
-#...O....O..#
-#.....O....G#
-#############`,
+############
+#S.........#
+#########..#
+#G..OO<....#
+#...OO<....#
+############`,
   },
   {
-    name: 'Express',
+    name: 'Hopscotch',
+    grid: `
+##############
+#S..>OO......#
+##########...#
+#....OO<.....#
+#..###########
+#..>OO......G#
+##############`,
+  },
+  {
+    name: 'Over the river',
     grid: `
 ###########
-#S..>....v#
-#.#######.#
-#.#..G..#.#
-#.#.###.#.#
-#^........#
+#S........#
+#.......v.#
+#OOOOOOOOO#
+#OOOOOOOOO#
+#.........#
+#.........#
+#G........#
 ###########`,
   },
   {
-    name: 'Shooting gallery',
+    name: 'Long shot',
     grid: `
-#############
-#S..........#
-#OOOOOOOOOO.#
-#...........#
-#.OOOOOOOOOO#
-#>.........G#
-#############`,
+#########
+#S.>OOv##
+#OOOOOOO#
+#OOOOOOO#
+#G....<.#
+#########`,
   },
   {
     name: 'Merry-go-round',
     grid: `
-###########
-#S........#
-#########.#
-#.........#
-#..O...O..#
-#....@....#
-#..O...O..#
-#.........#
-#.#########
-#........G#
-###########`,
+#########
+#S......#
+#.......#
+###...###
+###.@.###
+###...###
+#.......#
+#..O.O..#
+#G.....O#
+#########`,
+  },
+  {
+    name: 'Gearbox',
+    grid: `
+#############
+#S.....######
+###...#######
+###...#...###
+###.@...&.###
+###...#...###
+#######...###
+#G........###
+#############`,
   },
   {
     name: 'Switchback',
@@ -180,71 +206,48 @@ export const LEVELS = [
 ###########`,
   },
   {
-    name: 'Gearbox',
-    grid: `
-#############
-#S....#...O.#
-#.....#.....#
-#..@..#..&..#
-#...........#
-#..O........#
-#######.#####
-#.....O.....#
-#..........G#
-#############`,
-  },
-  {
     name: 'Roundabout',
     grid: `
-#############
-#S.......O..#
-#.###########
-#...........#
-#.....@.....#
-#...........#
-#####.#######
-#O...>.....G#
-#############`,
-  },
-  {
-    name: 'Long shot',
-    grid: `
-#############
-#S..O...O..v#
-#.O...O...O.#
-#...O...O...#
-#.O...O...O.#
-#...O...O...#
-#.O...O...O.#
-#G..........#
-#############`,
+###########
+#S........#
+#...v.....#
+#OOOOOOOOO#
+#OOOOOOOOO#
+###.....###
+####...####
+####.@.####
+####...####
+#.........#
+#.O..O..OG#
+###########`,
   },
   {
     name: 'Clockwork',
     grid: `
-###############
-#S....#.......#
-#.....#...&...#
-#..@..=.......#
-#.....#.......#
-#*....#.......#
-#######.#######
-#G...<..O.....#
-###############`,
+#############
+#S...#......#
+#....=......#
+#*...#......#
+########...##
+########...##
+########.@.##
+########...##
+#G.....OO<..#
+#############`,
   },
   {
     name: 'Grand tour',
     grid: `
 ###############
-#S..O.....#...#
-#.#...###.#.@.#
-#...#..*#.=...#
-###.#####.#...#
-#.........#..v#
-#.####.####.#.#
-#...O.....O.#.#
-######.##.###.#
-#G.=.....<....#
+#S....#.O.....#
+#.....=...v...#
+#*....#OOOOOOO#
+#######OOOOOOO#
+#######.......#
+#######...#####
+#######.@.#####
+#######...#####
+#G....OO<.....#
 ###############`,
   },
 ];

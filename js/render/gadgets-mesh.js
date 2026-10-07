@@ -10,7 +10,9 @@
  *           way it fires. When it fires the chevrons jab forward.
  *   GEAR    a brass gear set flush in the floor, sixteen teeth and five
  *           lightening holes so the turning reads at a glance, turning at
- *           the speed the sim says it does.
+ *           the speed and in the direction the sim says (a switch reverses
+ *           it). Its hub is open: the plank under it has the hub's hole cut
+ *           like any other, because in the sim it is one.
  *   SWITCH  a brass collar round an enamel button: red while the gates are
  *           as the level began, green once flipped. It sinks while the
  *           marble sits on it.
@@ -22,7 +24,7 @@
  */
 
 import * as THREE from '../../vendor/three/three.module.js';
-import { WALL_H, GEAR_R, BALL_R } from '../config.js';
+import { WALL_H, GEAR_R, BALL_R, HOLE_R } from '../config.js';
 import { woods } from './board-mesh.js';
 
 const GATE_DOWN = -(WALL_H + 0.08);
@@ -38,7 +40,6 @@ export function createGadgets(board, renderer) {
   // metalness, so plates and caps get a part-metal brass that reads as
   // brass from above; the curved goal ring keeps the true mirror.
   const brassFlat = own(new THREE.MeshStandardMaterial({ color: 0xe0b050, metalness: 0.55, roughness: 0.38 }));
-  const brassDim = own(new THREE.MeshStandardMaterial({ color: 0x9a7228, metalness: 1, roughness: 0.45 }));
   const walnut = own(new THREE.MeshStandardMaterial({ color: 0x3b2312, roughness: 0.75 }));
 
   // ---- kickers ----
@@ -66,16 +67,12 @@ export function createGadgets(board, renderer) {
 
   // ---- gears ----
   const gearGeo = own(flat(gearShape(GEAR_R + 0.05, 16), 0.03));
-  const hubGeo = own(new THREE.CylinderGeometry(0.16, 0.16, 0.05, 20));
   const gears = board.gears.map((gr) => {
     const g = new THREE.Group();
     g.position.set(gr.x, 0, gr.z);
     const disc = new THREE.Mesh(gearGeo, brassFlat);
     disc.receiveShadow = true;
     g.add(disc);
-    const hub = new THREE.Mesh(hubGeo, brassDim);
-    hub.position.y = 0.0;
-    g.add(hub);
     group.add(g);
     return { g, spin: gr.spin };
   });
@@ -207,8 +204,13 @@ function gearShape(tip, teeth) {
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
     const h = new THREE.Path();
-    h.absarc(Math.cos(a) * 0.72, Math.sin(a) * 0.72, 0.24, 0, Math.PI * 2, true);
+    h.absarc(Math.cos(a) * 0.86, Math.sin(a) * 0.86, 0.2, 0, Math.PI * 2, true);
     s.holes.push(h);
   }
+  // The open hub, a little wider than the hole cut in the plank beneath so
+  // the brass lip frames it.
+  const hub = new THREE.Path();
+  hub.absarc(0, 0, HOLE_R + 0.06, 0, Math.PI * 2, true);
+  s.holes.push(hub);
   return s;
 }

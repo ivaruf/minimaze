@@ -50,7 +50,11 @@ export function parseBoard(level) {
       else if (ch === 'S') start = at;
       else if (ch === 'G') goal = at;
       else if (KICK[ch]) kickers.push({ ...at, dx: KICK[ch][0], dz: KICK[ch][1] });
-      else if (ch === '@' || ch === '&') gears.push({ ...at, spin: ch === '@' ? 1 : -1 });
+      else if (ch === '@' || ch === '&') {
+        // The hub is a hole: you cannot roll across a gear, only ride it.
+        gears.push({ ...at, spin: ch === '@' ? 1 : -1 });
+        holes.push(at);
+      }
       else if (ch === '*') switches.push(at);
       else if (ch === '=' || ch === '_') {
         gateAt[r * cols + c] = gates.length;

@@ -23,8 +23,9 @@ edit:
 node tools/check-levels.mjs
 ```
 
-It proves every maze can be finished and that no kicker can trap the marble,
-and exits non-zero if not.
+It proves every maze can be finished, that no kicker can trap the marble,
+and that every kind of gadget in a maze is actually needed. It exits
+non-zero if not.
 
 ## Running
 

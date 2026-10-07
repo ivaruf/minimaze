@@ -71,8 +71,22 @@ export const GOAL_TIME = 0.9; // sink into the goal before the card
 
 // ---- gadgets (sim/gadgets.js) ----
 export const LAUNCH_SPEED = 10; // a kicker's shot, cells/s; under MAX_SPEED
+// A kicker throws the marble into the air: it flies LAUNCH_SPEED × HOP_TIME
+// = 3 cells from the pad's centre, clearing the two cells after the pad and
+// landing in the third. Holes under the flight do not catch it. That is the
+// kicker's whole reason to exist: a trench of holes only a kicker crosses.
+// tools/check-levels.mjs models exactly this, so change both together.
+export const HOP_TIME = 0.3;
+export const HOP_HEIGHT = 0.6; // drawn arc only; the sim is 2D
+// A landing is a thump: the marble keeps only this much of its speed.
+// Without it a throw that lands near a wall bounced straight back across
+// the trench it had just cleared.
+export const LAND_KEEP = 0.5;
 export const PAD_TRIGGER = 0.3; // centre within this of a pad's centre: fire
 export const PAD_REARM = 0.6; // and it re-arms once the marble is this far off
 export const GEAR_R = 1.35; // a gear covers the 3×3 cells round its hub
-export const GEAR_SPIN = 2.0; // rad/s
-export const GEAR_GRIP = 3.5; // how hard the moving floor drags the marble, 1/s
+export const GEAR_SPIN = 1.7; // rad/s; a switch reverses every gear
+// How hard the moving floor drags the marble, 1/s. Strong enough that you
+// ride a gear rather than roll across it: tilt can still steer you on it
+// (about 1 cell/s of slip at full tilt) but not stop it carrying you.
+export const GEAR_GRIP = 7;

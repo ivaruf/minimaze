@@ -250,7 +250,7 @@ function handleEvents() {
     else if (e.type === 'kick') {
       gadgets.onEvent(e);
       view.nudge(0.015);
-    }
+    } else if (e.type === 'land') view.nudge(0.03);
   }
   events.length = 0;
   // The card waits for the marble to finish sinking into the cup.

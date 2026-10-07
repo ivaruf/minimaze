@@ -1,23 +1,29 @@
 /*
  * gadgets.js — the moving parts of a board: kickers, gears, switches, gates.
  *
- *   KICKER  > < ^ v   a spring pad. Roll onto its middle and it fires you
- *                     its way at LAUNCH_SPEED, whatever you were doing. In a
- *                     one-wide corridor that makes it a one-way valve, which
- *                     is a puzzle piece and also a way to trap a player, so
- *                     tools/check-levels.mjs refuses any level where a
- *                     reachable spot cannot still reach the goal.
+ *   KICKER  > < ^ v   a spring pad. Roll onto its middle and it throws you
+ *                     its way, through the air, over the next two cells and
+ *                     down in the third (config HOP_TIME), whatever you were
+ *                     doing. Holes under the flight do not catch you; walls
+ *                     still do. A kicker is how you cross a trench.
  *   GEAR    @ &       a brass turntable set flush in the floor, clockwise
- *                     (@) or not (&), seen from above. The floor under the
- *                     marble moves, and grip drags the marble's velocity
- *                     toward it: ride it round, and leave at a tangent.
+ *                     (@) or not (&), seen from above, with a hole for a hub
+ *                     (board.js adds it). The floor under the marble moves
+ *                     and grips hard, so you ride it round rather than roll
+ *                     across it, and leave at a tangent.
  *   SWITCH  *         a brass button. Rolling over it flips every gate on
- *                     the board. It re-arms once the marble has rolled off,
- *                     so sitting on it does not flicker the gates.
+ *                     the board AND reverses every gear. It re-arms once the
+ *                     marble has rolled off, so sitting on it does not
+ *                     flicker anything.
  *   GATE    = _       a block that rises out of the floor (= starts shut,
  *                     _ starts open). A gate never shuts on the marble: if
  *                     the marble is in the way it waits, then shuts the
  *                     moment the marble is clear.
+ *
+ * Every gadget in a level must be NEEDED: tools/check-levels.mjs takes each
+ * kind away in turn and fails the level if it can still be finished (owner,
+ * 2026-10-07: "you don't really have to engage with the mechanics"). It
+ * also refuses any level with a pocket the marble cannot leave.
  *
  * All of it is plain data on board.live. Arming uses two radii (trigger,
  * then re-arm further out) so a marble resting on the edge of a pad cannot
@@ -40,7 +46,7 @@ export function resetGadgets(board) {
 
 /* Gears keep turning whatever the marble is doing; the renderer reads it. */
 export function turnGears(board, dt) {
-  board.live.turn += dt * C.GEAR_SPIN;
+  board.live.turn += dt * C.GEAR_SPIN * (board.live.flipped ? -1 : 1);
 }
 
 /*
@@ -54,7 +60,7 @@ export function gearGrip(m, board, dt) {
     const dx = m.x - g.x;
     const dz = m.z - g.z;
     if (dx * dx + dz * dz > C.GEAR_R * C.GEAR_R) continue;
-    const w = g.spin * C.GEAR_SPIN;
+    const w = g.spin * C.GEAR_SPIN * (board.live.flipped ? -1 : 1);
     const k = 1 - Math.exp(-C.GEAR_GRIP * dt);
     m.vx += (-dz * w - m.vx) * k;
     m.vz += (dx * w - m.vz) * k;
@@ -71,19 +77,15 @@ export function triggers(m, board, events) {
     if (live.kickArmed[i]) {
       if (d < C.PAD_TRIGGER) {
         live.kickArmed[i] = 0;
-        // Fire along the pad, keep a little of the sideways motion, and
-        // square up onto the pad's centre line so the shot runs true down
-        // a corridor instead of rattling along one wall.
-        const side = p.dx !== 0 ? m.vz : m.vx;
-        if (p.dx !== 0) {
-          m.vx = p.dx * C.LAUNCH_SPEED;
-          m.vz = side * 0.2;
-          m.z = p.z;
-        } else {
-          m.vz = p.dz * C.LAUNCH_SPEED;
-          m.vx = side * 0.2;
-          m.x = p.x;
-        }
+        // Throw from the pad's exact centre, straight along it, so every
+        // throw lands in the same place: the middle of the third cell on.
+        // A shot that depended on how you rolled in would make trenches a
+        // lottery.
+        m.x = p.x;
+        m.z = p.z;
+        m.vx = p.dx * C.LAUNCH_SPEED;
+        m.vz = p.dz * C.LAUNCH_SPEED;
+        m.air = C.HOP_TIME;
         events.push({ type: 'kick', i });
       }
     } else if (d > C.PAD_REARM) live.kickArmed[i] = 1;

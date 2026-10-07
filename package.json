@@ -1,0 +1,12 @@
+{
+  "name": "minimaze",
+  "private": true,
+  "type": "module",
+  "description": "MiniMaze \u2014 the vendored three.js is copied out of this dependency by tools/vendor-three.mjs.",
+  "scripts": {
+    "vendor": "node tools/vendor-three.mjs"
+  },
+  "devDependencies": {
+    "three": "0.186.1"
+  }
+}

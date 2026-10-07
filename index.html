@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1d140d" />
+    <meta
+      name="description"
+      content="A wooden tilt maze. Tilt the board, roll the marble past the holes and into the cup."
+    />
+    <title>MiniMaze</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Classic and first: it must survive anything the module graph does. -->
+    <script src="js/touch-guard.js"></script>
+  </head>
+  <body>
+    <canvas id="view" aria-label="The maze board"></canvas>
+
+    <div id="ui">
+      <div id="hud">
+        <span id="level-name"></span>
+      </div>
+      <p id="hint" aria-live="polite"></p>
+
+      <!-- M1: one card to start (it is also the tap iOS needs before it will
+           share the tilt sensor) and one to say the marble is home. The
+           hub's full menu floor arrives in M2 (DESIGN.md §7). -->
+      <section id="start" class="card">
+        <h1>MiniMaze</h1>
+        <p class="tag">Tilt the board. Mind the holes.</p>
+        <button id="start-go" class="go" type="button">Roll!</button>
+      </section>
+
+      <section id="clear" class="card" hidden>
+        <h2>Home!</h2>
+        <p class="tag">Rolled in <span id="clear-time"></span></p>
+        <button id="clear-next" class="go" type="button">Next maze</button>
+      </section>
+
+      <section id="no-gl" class="card" hidden>
+        <h2>No 3D here</h2>
+        <p class="tag">
+          This browser will not draw the board (WebGL is off or missing). Try
+          another browser, or turn hardware acceleration back on.
+        </p>
+      </section>
+    </div>
+
+    <!--
+      Crash bar. A module script reports its whole import graph through the
+      one <script> tag, so a failure here names js/main.js even when the file
+      that actually failed to load was one of its imports, three.js included
+      — say so in the message, or the next reader goes and checks a file that
+      is serving 200s.
+    -->
+    <div id="crash" role="alert" hidden></div>
+    <script>
+      (function () {
+        var bar = document.getElementById("crash");
+        function show(msg) {
+          bar.textContent = msg;
+          bar.hidden = false;
+        }
+        window.addEventListener(
+          "error",
+          function (e) {
+            var t = e.target;
+            if (t && t.tagName === "SCRIPT" && t.dataset && t.dataset.handled)
+              return;
+            if (t && t.tagName === "SCRIPT") {
+              show(
+                "A script failed to load: " +
+                  t.src +
+                  " (if this is js/main.js, the real culprit may be one of its imports)",
+              );
+              return;
+            }
+            show("Something broke: " + (e.message || e.type));
+          },
+          true,
+        );
+        window.addEventListener("unhandledrejection", function (e) {
+          show(
+            "Something broke: " +
+              (e.reason && e.reason.message ? e.reason.message : e.reason),
+          );
+        });
+      })();
+    </script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-# TILTMAZE — design and build plan
+# MiniMaze — design and build plan
 
 A wooden tilt labyrinth, the one with two knobs on the side that every
 grandparent's cupboard had. Tilt the board, roll a steel marble along the
@@ -14,9 +14,9 @@ renderer, not an engine" is enough before anything bigger leans on it.
 Part of the [games hub](../CLAUDE.md); its rules apply throughout. When this
 file and the code disagree, this file is corrected first.
 
-The name is a working name. The slug is the URL and the storage prefix, so it
-must be settled **before the first push**; after that a rename costs players
-their progress (hub §6).
+The name is **MiniMaze**, the owner's, and the slug `minimaze`. The slug is
+the URL and the storage prefix, so once pushed it stays: a rename costs
+players their progress (hub §6).
 
 ---
 
@@ -43,10 +43,10 @@ One file, one owner (hub §12). **sim** is written first and alone because
 everything else is a view of it, and it never imports three.
 
 ```
-tiltmaze/
+minimaze/
   index.html               DOM shell: screens, HUD, corner, crash bar           [ui]
-  manifest.webmanifest     "TILTMAZE — <tagline>"                               [assets]
-  sw.js                    tiltmaze-<VERSION>, cache-first, opt-in update       [assets]
+  manifest.webmanifest     "MiniMaze — <tagline>"                               [assets]
+  sw.js                    minimaze-<VERSION>, cache-first, opt-in update       [assets]
   css/style.css            every screen; touch-guard block at the top          [ui]
   vendor/three/            three.module.js, three.core.js, chosen add-ons     [vendor, generated]
   js/
@@ -202,7 +202,7 @@ behind them, in the board's wood-and-brass palette.
 All of hub §2's six menu duties and the touch layers, in their exact form:
 the corner (menu, sound, fullscreen; **on every screen**, because the HUD is
 a level name and a stopwatch and leaves the corner free); MUSIC and EFFECTS
-sliders with `tiltmaze.vol.music.v1` / `tiltmaze.vol.sfx.v1`; a title screen
+sliders with `minimaze.vol.music.v1` / `minimaze.vol.sfx.v1`; a title screen
 with the way in and "back to arcade" under it via `arcade/exit.js`; aligned
 groups; the landscape-phone grid (maxgear's shape); the touch guard and CSS
 from lobbots, with the board `touch-action: none`. Solo game, so the menu
@@ -211,7 +211,7 @@ pauses.
 Plus hub §3 (SW, slug-filtered cleanup, `GET_VERSION`, opt-in update) and §4
 (manifest, icons from `make-icons.py`).
 
-Storage: `tiltmaze.progress.v1` holds finished levels and best times.
+Storage: `minimaze.progress.v1` holds finished levels and best times.
 
 ---
 
@@ -236,6 +236,5 @@ next 3D game here should use it.
 
 ## 9. Open questions for the owner
 
-- The name. TILTMAZE is the working one.
 - Whether the stopwatch is shown during play or only on the level-clear
   card. Leaning: only on the card, so play stays calm for the youngest.

@@ -13,7 +13,9 @@
  * board doing is what is rolling the ball.
  *
  * Still to come in M2 (DESIGN.md §7–8): the hub's corner (sound,
- * fullscreen), sound itself, the way back to the arcade, the service worker.
+ * fullscreen), sound itself, the way back to the arcade. The service worker
+ * is not wired from here at all: js/update.js owns it, in a module graph of
+ * its own.
  */
 
 import * as C from './config.js';

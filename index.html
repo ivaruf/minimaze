@@ -12,6 +12,11 @@
       content="A wooden tilt maze. Tilt the board, roll the marble past the holes and into the cup."
     />
     <title>MiniMaze</title>
+    <!-- The arcade builds this game's cabinet from the manifest, splitting
+         `name` on the em-dash; the install prompt reads it too. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="stylesheet" href="css/style.css" />
     <!-- Classic and first: it must survive anything the module graph does. -->
     <script src="js/touch-guard.js"></script>
@@ -40,6 +45,19 @@
           <button id="start-go" class="go" type="button">Roll!</button>
           <button id="start-pick" class="go alt" type="button">Pick a maze</button>
         </div>
+        <!--
+          UPDATE READY. Hidden until a new service worker has installed and
+          is waiting; tapping it is the only thing in the game that posts
+          SKIP_WAITING. It sits on the title card on purpose — this card is
+          gone for the whole of a maze, so no deploy can ever reload a marble
+          out from under the player. Owned end to end by js/update.js, which
+          nothing imports.
+        -->
+        <button id="update" type="button" hidden>
+          <span class="update-title">A new board is ready</span>
+          <span class="update-sub">Tap to take it</span>
+        </button>
+        <p id="build" hidden></p>
       </section>
 
       <section id="picker" class="card wide" hidden>
@@ -121,6 +139,12 @@
         });
       })();
     </script>
+    <!--
+      The service worker and the update button, in a graph of their own and
+      ahead of the game's: a module graph aborts as a whole when one import
+      fails, and the button that fetches a fix must not die with what it fixes.
+    -->
+    <script type="module" src="js/update.js"></script>
     <script type="module" src="js/main.js"></script>
   </body>
 </html>

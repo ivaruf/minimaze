@@ -367,6 +367,54 @@ textarea,
 }
 
 /*
+ * UPDATE READY (js/update.js), on the title card only. A notice pinned to the
+ * plank rather than another brass button: it is not a way into a maze, so it
+ * must not look like one, and it sits below the two that are. A dashed brass
+ * rule round a slightly darker patch of the same wood, the words engraved.
+ */
+#update {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 2px dashed var(--brass);
+  border-radius: 10px;
+  background: rgba(74, 42, 18, 0.12);
+  font-family: var(--serif);
+  text-align: center;
+  cursor: pointer;
+}
+#update:active {
+  background: rgba(74, 42, 18, 0.2);
+}
+#update:focus-visible {
+  outline: 3px solid #2a1a0c;
+  outline-offset: 3px;
+}
+.update-title {
+  display: block;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  text-shadow: 0 1px 0 var(--ink-hi);
+}
+.update-sub {
+  display: block;
+  margin-top: 2px;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: #6a4020;
+}
+
+/* Which build is actually serving this session, scratched small into the
+   bottom of the title plank. */
+#build {
+  margin: 12px 0 -8px;
+  font: italic 0.75rem var(--serif);
+  color: rgba(74, 42, 18, 0.6);
+}
+
+/*
  * A phone on its side: 300–430px tall. Titles shrink, the actions stand side
  * by side as equals, and the picker spreads into fewer, wider rows. The full
  * landscape grid (maxgear's shape) comes with the M2 menu floor.
@@ -404,6 +452,22 @@ textarea,
   .tile {
     aspect-ratio: auto;
     height: 44px;
+  }
+  /* The notice and the build line would push the title card off the bottom;
+     fold the notice to one line and tuck the build line closer. */
+  #update {
+    margin-top: 10px;
+    padding: 5px 10px;
+  }
+  .update-sub {
+    display: inline;
+    margin: 0 0 0 0.5em;
+  }
+  .update-title {
+    display: inline;
+  }
+  #build {
+    margin: 6px 0 -6px;
   }
 }
 

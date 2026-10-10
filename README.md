@@ -10,9 +10,27 @@ the physics and the reasons are in [DESIGN.md](DESIGN.md).
 ## Status
 
 Eighteen mazes with kickers, gears, switches and gates; a maze picker with
-ticks and best times; a pause card; wooden menus. No sound, no service
-worker, no manifest, no arcade exit yet; those are M2 (DESIGN.md §8). Not
-deployed.
+ticks and best times; a pause card; wooden menus. Installable and playable
+offline: a manifest, icons, and a cache-first service worker that waits for
+a tap on UPDATE READY before taking a new build. No sound, no corner
+(sound and fullscreen) and no arcade exit yet; those are the rest of M2
+(DESIGN.md §8). Not deployed.
+
+## Releasing
+
+Bump `VERSION` in `sw.js` with every committed change that deploys, and keep
+it in that file: the browser only notices a release when `sw.js` itself
+changes. Any new shipped file goes in its `ASSETS` list too, or it vanishes
+offline.
+
+## Icons
+
+```sh
+python3 tools/make-icons.py
+```
+
+The script is the source of truth; its header describes the motif. Never
+edit the PNGs.
 
 ## Levels
 

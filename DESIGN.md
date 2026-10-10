@@ -280,6 +280,8 @@ Storage: `minimaze.progress.v1` holds finished levels and best times.
 - **M1½ — done 2026-10-07, at the owner's ask after a first look.** Gadgets,
   eighteen mazes, the maze picker, a pause card, the wooden menus.
 - **M2 — a game.** The whole hub floor (§7), sounds, icons, manifest, SW.
+  Icons, manifest and SW done 2026-10-10 (`update.js` is the UPDATE READY
+  button on the title card); the floor and the sounds remain.
 - **M3 — if it earns it.** Blender frame and knobs, checkpoints, moving
   pieces (a swinging gate, a rotating disc), a Norwegian-language toggle for
   the few words on screen.

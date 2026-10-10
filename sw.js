@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.2.0'; // installable: manifest, icons, offline play, opt-in updates
+const VERSION = 'v0.3.0'; // bokmål first and English, switched live; plain menu words
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is
@@ -45,6 +45,7 @@ const ASSETS = [
   './js/levels.js',
   './js/store.js',
   './js/ui.js',
+  './js/i18n.js',
   './js/sim/board.js',
   './js/sim/marble.js',
   './js/sim/gadgets.js',

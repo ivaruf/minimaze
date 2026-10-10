@@ -367,6 +367,77 @@ textarea,
 }
 
 /*
+ * THE LANGUAGE ROW (hub §2, "Two languages"), on the title card and in the
+ * pause card. A small engraved caption over two equal blocks, the same
+ * walnut-and-brass pair as the tiles: walnut until chosen, brass once it
+ * is, so the choice reads in metal rather than size. Each carries its flag
+ * (the hub's exact art) and its own name in its own language.
+ */
+.lang-row {
+  margin-top: 16px;
+}
+.lang-caption {
+  display: block;
+  margin-bottom: 6px;
+  font: italic 700 0.95rem var(--serif);
+  color: var(--ink);
+  text-shadow: 0 1px 0 var(--ink-hi);
+}
+.seg {
+  display: flex;
+  gap: 10px;
+}
+.seg-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 10px;
+  font: 700 1rem var(--serif);
+  color: var(--birch);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+  background: var(--wood-dark) center / 240px, #6a3e1f;
+  border: 2px solid #4f2d14;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 160, 0.25),
+    0 3px 0 #3b2312;
+  cursor: pointer;
+}
+.seg-btn[aria-pressed="true"] {
+  color: #2a1a0c;
+  text-shadow: 0 1px 0 rgba(255, 240, 190, 0.55);
+  background: linear-gradient(#f6d98c, #d8a640 55%, #b8862c);
+  border-color: #7a5418;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 3px 0 #6e4a14;
+}
+.seg-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #3b2312;
+}
+.seg-btn:focus-visible {
+  outline: 3px solid #2a1a0c;
+  outline-offset: 3px;
+}
+.seg-btn .flag {
+  flex: none;
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+.seg-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/*
  * UPDATE READY (js/update.js), on the title card only. A notice pinned to the
  * plank rather than another brass button: it is not a way into a maze, so it
  * must not look like one, and it sits below the two that are. A dashed brass
@@ -443,6 +514,28 @@ textarea,
     min-height: 40px;
     padding: 6px 12px;
     font-size: 1.05rem;
+  }
+  /* The pause card's four actions stand in one row, so the language row
+     fits under them; the caption moves beside its two blocks. */
+  #pause {
+    width: min(720px, calc(100% - 32px));
+  }
+  .lang-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .lang-caption {
+    margin: 0;
+    flex: none;
+  }
+  .seg {
+    flex: 1 1 auto;
+  }
+  .seg-btn {
+    min-height: 38px;
+    padding: 4px 10px;
   }
   .tiles {
     grid-template-columns: repeat(9, 1fr);

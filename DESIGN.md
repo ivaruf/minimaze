@@ -64,6 +64,7 @@ minimaze/
     render/board-mesh.js   board with holes, instanced walls, goal              [render]
     render/marble-mesh.js  the steel ball, its roll, its fall                    [render]
     ui.js                  title, level select, pause, level-clear, volume      [ui]
+    i18n.js                bokmål + English, arcade.lang.v1, live switching     [ui]
     audio.js               cue loader, the rolling loop, two buses              [assets]
     update.js              SW registration + UPDATE READY (self-contained)     [assets]
     screen.js              fullscreen + orientation lock (self-contained)       [assets]

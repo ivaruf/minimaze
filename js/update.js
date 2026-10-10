@@ -39,6 +39,40 @@ const button = document.getElementById("update");
 const buildLine = document.getElementById("build");
 
 /*
+ * Its own words in both languages: this file imports nothing, js/i18n.js
+ * included. It reads <html lang> (set before first paint by index.html) and
+ * repaints on `arcade:lang`, which js/i18n.js dispatches on every switch.
+ */
+const WORDS = {
+  nb: {
+    title: "Ny versjon klar",
+    sub: "Trykk for å hente den",
+    fetching: "Henter den nye versjonen …",
+    build: (v) => `Versjon ${v}`,
+  },
+  en: {
+    title: "Update ready",
+    sub: "Tap to take it",
+    fetching: "Fetching the new board…",
+    build: (v) => `Build ${v}`,
+  },
+};
+const words = () => WORDS[document.documentElement.lang] || WORDS.nb;
+let version = null;
+
+function paint() {
+  const w = words();
+  if (button) {
+    const title = button.querySelector(".update-title");
+    const sub = button.querySelector(".update-sub");
+    if (title) title.textContent = w.title;
+    if (sub) sub.textContent = accepted ? w.fetching : w.sub;
+  }
+  if (buildLine && version) buildLine.textContent = w.build(version);
+}
+document.addEventListener("arcade:lang", paint);
+
+/*
  * Did WE ask for the takeover? `controllerchange` also fires for reasons that
  * are none of our business — another tab of the same game accepting the update,
  * most obviously — and reloading on those would be exactly the mid-maze reload
@@ -49,12 +83,12 @@ let accepted = false;
 /** Show the button, wired to the specific worker that is waiting. */
 function offer(worker) {
   if (!button || !worker) return;
+  paint();
   button.hidden = false;
   button.onclick = () => {
     accepted = true;
     button.disabled = true;
-    const sub = button.querySelector(".update-sub");
-    if (sub) sub.textContent = "Fetching the new board…";
+    paint();
     worker.postMessage({ type: "SKIP_WAITING" });
   };
 }
@@ -71,9 +105,10 @@ function showBuild() {
   try {
     const channel = new MessageChannel();
     channel.port1.onmessage = (event) => {
-      const version = event.data && event.data.version;
-      if (!version) return;
-      buildLine.textContent = `Build ${version}`;
+      const v = event.data && event.data.version;
+      if (!v) return;
+      version = v;
+      paint();
       buildLine.hidden = false;
     };
     worker.postMessage({ type: "GET_VERSION" }, [channel.port2]);

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="nb">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -18,11 +18,23 @@
     <link rel="apple-touch-icon" href="icons/icon-180.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
     <link rel="stylesheet" href="css/style.css" />
+    <!-- The language before first paint, so the page never flashes the wrong
+         one: the hub's shared choice (arcade.lang.v1), Norwegian when there
+         is none. js/i18n.js reads the same key and owns it from then on. -->
+    <script>
+      (function () {
+        var l = "nb";
+        try {
+          if (localStorage.getItem("arcade.lang.v1") === "en") l = "en";
+        } catch (e) {}
+        document.documentElement.lang = l;
+      })();
+    </script>
     <!-- Classic and first: it must survive anything the module graph does. -->
     <script src="js/touch-guard.js"></script>
   </head>
   <body>
-    <canvas id="view" aria-label="The maze board"></canvas>
+    <canvas id="view" aria-label="Labyrintbrettet" data-i18n-aria="board.label"></canvas>
 
     <div id="ui">
       <div id="hud" hidden>
@@ -30,7 +42,7 @@
         <!-- The menu plate: three bars, not a gear, because it holds the way
              back into the maze as well as the settings (hub §2). The glyph is
              the hub's exact path. Sound and fullscreen join it in M2. -->
-        <button id="menu-btn" class="icon-button" type="button" aria-label="Menu" title="Menu">
+        <button id="menu-btn" class="icon-button" type="button" aria-label="Meny" title="Meny" data-i18n-label="menu">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
       </div>
@@ -40,10 +52,42 @@
            needs before it will share the tilt sensor (input/tilt.js). -->
       <section id="start" class="card" hidden>
         <h1>MiniMaze</h1>
-        <p class="tag">Tilt the board. Mind the holes.</p>
+        <p class="tag" data-i18n="start.tag">Vipp brettet. Pass deg for hullene.</p>
         <div class="actions">
-          <button id="start-go" class="go" type="button">Roll!</button>
-          <button id="start-pick" class="go alt" type="button">Pick a maze</button>
+          <button id="start-go" class="go" type="button" data-i18n="play">Spill</button>
+          <button id="start-pick" class="go alt" type="button" data-i18n="pick">Velg nivå</button>
+        </div>
+        <!-- The language, before any maze: the stranger who cannot read the
+             Norwegian this opened in needs it here most (hub §2). The same
+             row sits in the pause card; each copy has its own clipPath ids,
+             because ids are page-global and a second Union Jack would clip
+             against the first. -->
+        <div class="lang-row">
+          <span class="lang-caption" data-i18n="language">Språk</span>
+          <div class="seg" role="group" data-i18n-label="language" aria-label="Språk">
+            <button type="button" class="seg-btn" data-lang="nb" aria-pressed="true" lang="nb">
+              <svg class="flag" viewBox="0 0 22 16" aria-hidden="true">
+                <rect width="22" height="16" fill="#ba0c2f"/>
+                <path d="M6 0h4v16H6zM0 6h22v4H0z" fill="#fff"/>
+                <path d="M7 0h2v16H7zM0 7h22v2H0z" fill="#00205b"/>
+              </svg>
+              <span>Norsk</span>
+            </button>
+            <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" lang="en">
+              <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+                <clipPath id="uk-clip-start"><path d="M0 0v30h60V0z"/></clipPath>
+                <clipPath id="uk-diag-start"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
+                <g clip-path="url(#uk-clip-start)">
+                  <path d="M0 0v30h60V0z" fill="#012169"/>
+                  <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+                  <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-diag-start)" stroke="#c8102e" stroke-width="4"/>
+                  <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+                  <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
+                </g>
+              </svg>
+              <span>English</span>
+            </button>
+          </div>
         </div>
         <!--
           UPDATE READY. Hidden until a new service worker has installed and
@@ -54,46 +98,74 @@
           nothing imports.
         -->
         <button id="update" type="button" hidden>
-          <span class="update-title">A new board is ready</span>
-          <span class="update-sub">Tap to take it</span>
+          <span class="update-title">Ny versjon klar</span>
+          <span class="update-sub">Trykk for å hente den</span>
         </button>
         <p id="build" hidden></p>
       </section>
 
       <section id="picker" class="card wide" hidden>
-        <h2>Pick a maze</h2>
+        <h2 data-i18n="pick">Velg nivå</h2>
         <div id="picker-tiles" class="tiles"></div>
         <div class="actions">
-          <button id="picker-back" class="go alt" type="button">Back</button>
+          <button id="picker-back" class="go alt" type="button" data-i18n="back">Tilbake</button>
         </div>
       </section>
 
       <section id="pause" class="card" hidden>
-        <h2>Paused</h2>
-        <p class="tag">The marble waits where you left it.</p>
+        <h2 data-i18n="paused">Pause</h2>
+        <p class="tag" data-i18n="pause.tag">Kula venter der du forlot den.</p>
         <div class="actions">
-          <button id="pause-resume" class="go" type="button">Keep rolling</button>
-          <button id="pause-level" class="go alt" type="button" hidden>Level the board</button>
-          <button id="pause-restart" class="go alt" type="button">Start this maze over</button>
-          <button id="pause-pick" class="go alt" type="button">Pick a maze</button>
+          <button id="pause-resume" class="go" type="button" data-i18n="resume">Fortsett</button>
+          <button id="pause-level" class="go alt" type="button" hidden data-i18n="calibrate">Nullstill tiltingen</button>
+          <button id="pause-restart" class="go alt" type="button" data-i18n="restart">Start på nytt</button>
+          <button id="pause-pick" class="go alt" type="button" data-i18n="pick">Velg nivå</button>
+        </div>
+        <div class="lang-row">
+          <span class="lang-caption" data-i18n="language">Språk</span>
+          <div class="seg" role="group" data-i18n-label="language" aria-label="Språk">
+            <button type="button" class="seg-btn" data-lang="nb" aria-pressed="true" lang="nb">
+              <svg class="flag" viewBox="0 0 22 16" aria-hidden="true">
+                <rect width="22" height="16" fill="#ba0c2f"/>
+                <path d="M6 0h4v16H6zM0 6h22v4H0z" fill="#fff"/>
+                <path d="M7 0h2v16H7zM0 7h22v2H0z" fill="#00205b"/>
+              </svg>
+              <span>Norsk</span>
+            </button>
+            <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" lang="en">
+              <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+                <clipPath id="uk-clip-pause"><path d="M0 0v30h60V0z"/></clipPath>
+                <clipPath id="uk-diag-pause"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
+                <g clip-path="url(#uk-clip-pause)">
+                  <path d="M0 0v30h60V0z" fill="#012169"/>
+                  <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+                  <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-diag-pause)" stroke="#c8102e" stroke-width="4"/>
+                  <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+                  <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
+                </g>
+              </svg>
+              <span>English</span>
+            </button>
+          </div>
         </div>
       </section>
 
       <section id="clear" class="card" hidden>
-        <h2>Home!</h2>
-        <p class="tag">Rolled in <span id="clear-time"></span></p>
+        <h2 data-i18n="clear.title">I mål!</h2>
+        <p id="clear-time" class="tag"></p>
         <p id="clear-best" class="best" hidden></p>
         <div class="actions">
-          <button id="clear-next" class="go" type="button">Next maze</button>
-          <button id="clear-pick" class="go alt" type="button">Pick a maze</button>
+          <button id="clear-next" class="go" type="button">Neste nivå</button>
+          <button id="clear-pick" class="go alt" type="button" data-i18n="pick">Velg nivå</button>
         </div>
       </section>
 
       <section id="no-gl" class="card" hidden>
-        <h2>No 3D here</h2>
-        <p class="tag">
-          This browser will not draw the board (WebGL is off or missing). Try
-          another browser, or turn hardware acceleration back on.
+        <h2 data-i18n="nogl.title">Ingen 3D her</h2>
+        <p class="tag" data-i18n="nogl.body">
+          Denne nettleseren klarer ikke å tegne brettet (WebGL er slått av
+          eller mangler). Prøv en annen nettleser, eller slå på
+          maskinvareakselerasjon igjen.
         </p>
       </section>
     </div>
@@ -108,6 +180,23 @@
     <div id="crash" role="alert" hidden></div>
     <script>
       (function () {
+        // Its own words, read from <html lang> at the moment of the crash:
+        // this must work when js/i18n.js never loaded at all.
+        var WORDS = {
+          nb: {
+            load: "Et skript kunne ikke lastes: ",
+            hint: " (er det js/main.js, kan den egentlige feilen være en av filene den importerer)",
+            broke: "Noe gikk i stykker: ",
+          },
+          en: {
+            load: "A script failed to load: ",
+            hint: " (if this is js/main.js, the real culprit may be one of its imports)",
+            broke: "Something broke: ",
+          },
+        };
+        function w() {
+          return WORDS[document.documentElement.lang] || WORDS.nb;
+        }
         var bar = document.getElementById("crash");
         function show(msg) {
           bar.textContent = msg;
@@ -120,20 +209,16 @@
             if (t && t.tagName === "SCRIPT" && t.dataset && t.dataset.handled)
               return;
             if (t && t.tagName === "SCRIPT") {
-              show(
-                "A script failed to load: " +
-                  t.src +
-                  " (if this is js/main.js, the real culprit may be one of its imports)",
-              );
+              show(w().load + t.src + w().hint);
               return;
             }
-            show("Something broke: " + (e.message || e.type));
+            show(w().broke + (e.message || e.type));
           },
           true,
         );
         window.addEventListener("unhandledrejection", function (e) {
           show(
-            "Something broke: " +
+            w().broke +
               (e.reason && e.reason.message ? e.reason.message : e.reason),
           );
         });

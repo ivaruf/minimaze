@@ -30,8 +30,13 @@ import { createGadgets } from './render/gadgets-mesh.js';
 import { createMarbleMesh } from './render/marble-mesh.js';
 import { createUI } from './ui.js';
 import * as store from './store.js';
+import { paintStatic } from './i18n.js';
 
 const canvas = document.getElementById('view');
+
+// The words first: if WebGL fails below, the card that says so must already
+// speak the player's language (ui.js repaints again once it exists).
+paintStatic();
 
 let view;
 try {
@@ -190,13 +195,7 @@ const told = new Set();
 function showHint(src) {
   if (told.has(src)) return;
   told.add(src);
-  ui.hint(
-    src === 'device'
-      ? 'Tilt to roll. Hold it however you like: that is level.'
-      : src === 'drag'
-        ? 'Drag to tilt the board.'
-        : 'Arrows tilt the board.',
-  );
+  ui.hint(src === 'device' ? 'hint.device' : src === 'drag' ? 'hint.drag' : 'hint.keys');
 }
 
 // ---- the loop ----

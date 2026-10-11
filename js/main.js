@@ -13,7 +13,8 @@
  * board doing is what is rolling the ball.
  *
  * Still to come in M2 (DESIGN.md §7–8): the hub's corner (sound,
- * fullscreen), sound itself, the way back to the arcade. The service worker
+ * fullscreen) and sound itself. The way back to the arcade is drawn by
+ * ui.js and looked for from the bottom of this file. The service worker
  * is not wired from here at all: js/update.js owns it, in a module graph of
  * its own.
  */
@@ -88,10 +89,7 @@ const ui = createUI({
     playing = true;
     if (!ok && !told.size) showHint(matchMedia('(pointer: coarse)').matches ? 'drag' : 'keys');
   },
-  onResume: () => {
-    ui.hideCards();
-    playing = true;
-  },
+  onResume: () => resume(),
   onRestart: () => {
     loadLevel(levelIndex);
     ui.hideCards();
@@ -152,16 +150,50 @@ try {
 } catch {
   window.addEventListener('orientationchange', recal);
 }
+/*
+ * ESCAPE GOES ONE STEP BACK (hub §2), decided here and nowhere else:
+ *
+ *   picker open        -> the picker's own Back (to whichever card opened it)
+ *   rolling            -> open the pause card; the marble stops
+ *   pause card open    -> close it; the marble rolls on from where it was
+ *   clear card         -> the start card, the nearest screen with the way
+ *                         out on it (the clear card has none of its own)
+ *   start card         -> exactly the Back to arcade button: the same quit(),
+ *                         and only when that button is showing
+ *
+ * So no single press ever throws a maze away, and Escape, Escape from
+ * anywhere lands on a card with the way out on it. The listener is on the
+ * capture phase and stops the event there, so it runs before pointer.js's
+ * steering listener (also on window, registered earlier) and nothing else
+ * ever sees an Escape; preventDefault for the browser's own. A held key
+ * auto-repeats, which would flicker pause on and off, so repeats are eaten
+ * too. P keeps its old job as a pause toggle; C still re-levels the tilt.
+ */
+function escape() {
+  const card = ui.current();
+  if (card === 'picker') ui.pickerBackTo();
+  else if (playing) pause();
+  else if (card === 'pause') resume();
+  else if (card === 'clear') ui.showStart();
+  else if (card === 'start' && ui.exitShown()) ui.quit();
+}
+function resume() {
+  ui.hideCards();
+  playing = true;
+}
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'KeyC') tilt.calibrate();
-  if (e.code === 'Escape' || e.code === 'KeyP') {
-    if (playing) pause();
-    else if (ui.paused()) {
-      ui.hideCards();
-      playing = true;
-    }
+  if (e.code === 'Escape') {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (!e.repeat) escape();
+    return;
   }
-});
+  if (e.code === 'KeyC') tilt.calibrate();
+  if (e.code === 'KeyP') {
+    if (playing) pause();
+    else if (ui.paused()) resume();
+  }
+}, true);
 // A tab put away mid-maze comes back paused, not rolling.
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) pause();
@@ -272,3 +304,13 @@ loadLevel(0);
 marble.mode = 'roll';
 ui.showStart();
 requestAnimationFrame(frame);
+
+// The way back to the arcade. exit.js is a deferred classic script from
+// another repo and may be absent (served alone) or late (slow network), so
+// look for it now, on load, and once more shortly after (lobbots); every
+// outcome is normal.
+if (!ui.wireExit()) {
+  window.addEventListener('load', () => {
+    if (!ui.wireExit()) setTimeout(() => ui.wireExit(), 1500);
+  });
+}

@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.3.0'; // bokmål first and English, switched live; plain menu words
+const VERSION = 'v0.3.1'; // the way back to the arcade on the start and pause cards; Escape walks one step toward it
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is

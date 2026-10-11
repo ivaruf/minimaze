@@ -32,6 +32,18 @@
     </script>
     <!-- Classic and first: it must survive anything the module graph does. -->
     <script src="js/touch-guard.js"></script>
+    <!--
+      What quitting means here: back to the arcade when the arcade framed us,
+      closing the window when we are installed. arcade/exit.js decides that
+      and draws nothing; js/ui.js shows our own button only once
+      window.ArcadeExit has actually turned up.
+
+      Classic and deferred on purpose: another repo's file inside a module
+      graph takes the whole game down with it when it 404s — and it is
+      EXPECTED to 404 when this directory is served on its own, which is what
+      data-handled tells the crash bar at the bottom of this file.
+    -->
+    <script src="../arcade/exit.js" defer data-handled="optional"></script>
   </head>
   <body>
     <canvas id="view" aria-label="Labyrintbrettet" data-i18n-aria="board.label"></canvas>
@@ -101,6 +113,18 @@
           <span class="update-title">Ny versjon klar</span>
           <span class="update-sub">Trykk for å hente den</span>
         </button>
+        <!--
+          The way back to the arcade (hub §2): the last thing in the column,
+          the full width, a little apart from everything above it, and
+          outlined rather than filled, because leaving is never the
+          recommended action. The same button, glyph and words end the
+          pause card too, never a panel deeper; js/ui.js shows both when there is
+          somewhere to go and words them through ArcadeExit.verb().
+        -->
+        <button id="start-exit" class="go exit" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+          <span class="exit-label">Tilbake til arkaden</span>
+        </button>
         <p id="build" hidden></p>
       </section>
 
@@ -148,6 +172,10 @@
             </button>
           </div>
         </div>
+        <button id="pause-exit" class="go exit" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+          <span class="exit-label">Tilbake til arkaden</span>
+        </button>
       </section>
 
       <section id="clear" class="card" hidden>

@@ -6,13 +6,13 @@
  * as data URLs, which style.css reads through --wood-light / --wood-dark.
  * This file only decides what is showing and what the words say.
  *
- *   start   the title, Play (the next unfinished maze), Pick a level, and
- *           the language row
+ *   start   the title, Play (the next unfinished maze), Pick a level, the
+ *           language row, and the way back to the arcade
  *   picker  every maze as a numbered tile, ticked once finished; none are
  *           locked (DESIGN.md §5: no locked doors)
  *   pause   behind the menu plate: resume, restart, pick a level, "reset
- *           the tilt" when device tilt is live, and the language row. Solo
- *           game, so the menu pauses (hub §2).
+ *           the tilt" when device tilt is live, the language row and the
+ *           way back to the arcade. Solo game, so the menu pauses (hub §2).
  *   clear   "Home!", the time, a new-best line, next level / pick a level
  *
  * The menu words are the hub's shared glossary (§2, "Menus speak plainly"),
@@ -25,8 +25,16 @@
  * marble. What a card shows that is built from data (the clear card's
  * time, the plate's maze name) is kept as its inputs and re-rendered.
  *
- * The hub's corner (sound and fullscreen beside the menu plate), the volume
- * panel and the way back to the arcade arrive with the M2 menu floor.
+ * THE WAY BACK TO THE ARCADE ends the start card and the pause card, at the
+ * top level of each and never a panel deeper (hub §2, "One button"). It is
+ * wired here: wireExit() below, retried by main.js because exit.js is a
+ * deferred classic script from another repo that may be late or missing.
+ *
+ * ESCAPE is decided by main.js in one place; this file only answers what is
+ * showing (current()) and does the step back (pickerBackTo(), quit()).
+ *
+ * The hub's corner (sound and fullscreen beside the menu plate) and the
+ * volume panel arrive with the M2 menu floor.
  */
 
 import { bestTime } from './store.js';
@@ -133,7 +141,80 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onP
   });
   paintStatic();
 
+  /*
+   * The arcade door. Shown only when there is somewhere to go — a launcher
+   * framing us, or an installed window that can close — asked through
+   * framed()/standalone() rather than offers(), because the exit.js that
+   * answers may be an older cached copy that predates offers(), and a guard
+   * on the new name fails CLOSED inside the arcade, where the way out matters
+   * most. The words come from verb(), handed both phrasings in the current
+   * language, so the label never promises what quit() will not do; a
+   * language switch asks again. Only the label span is repainted, so the
+   * drawn arrow in front of it stays put.
+   */
+  const exitBtns = [$('start-exit'), $('pause-exit')];
+  let exitApi = null;
+  let exitRefused = false;
+
+  function paintExit() {
+    if (!exitApi) return;
+    let label;
+    try {
+      label = exitRefused ? t('exit.refused') : exitApi.verb({ arcade: t('exit.arcade'), app: t('exit.close') });
+    } catch {
+      label = t('exit.arcade');
+    }
+    for (const b of exitBtns) b.querySelector('.exit-label').textContent = label;
+  }
+  document.addEventListener('arcade:lang', paintExit);
+
+  function quit() {
+    if (!exitApi || exitRefused) return;
+    Promise.resolve(exitApi.quit())
+      .then((how) => {
+        // 'refused': the browser would not close a window it did not open.
+        // The game is still running, so say so instead of a dead button.
+        if (how !== 'refused') return;
+        exitRefused = true;
+        for (const b of exitBtns) b.disabled = true;
+        paintExit();
+      })
+      .catch(() => {});
+  }
+  for (const b of exitBtns) b.addEventListener('click', quit);
+
+  let exitWired = false;
+  function wireExit() {
+    if (exitWired) return true;
+    const exit = window.ArcadeExit;
+    if (!exit) return false;
+    exitWired = true;
+    let show = false;
+    try {
+      show = exit.framed() || exit.standalone();
+    } catch {
+      show = false;
+    }
+    if (!show) return true;
+    exitApi = exit;
+    for (const b of exitBtns) b.hidden = false;
+    paintExit();
+    return true;
+  }
+
+  function current() {
+    for (const [k, el] of Object.entries(cards)) if (!el.hidden) return k;
+    return null;
+  }
+
   return {
+    wireExit,
+    current,
+    // Escape on the start card is this button, and only while it is shown.
+    exitShown: () => exitApi != null && !exitRefused,
+    quit,
+    // The picker's Back, for Escape: the same step its button takes.
+    pickerBackTo: () => show(pickerBack),
     showStart: () => show('start'),
     hideCards: () => show(null),
     showPause(tiltLive) {

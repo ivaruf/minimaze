@@ -66,6 +66,9 @@ const STRINGS = {
     'nogl.body':
       'Denne nettleseren klarer ikke å tegne brettet (WebGL er slått av eller mangler). Prøv en annen nettleser, eller slå på maskinvareakselerasjon igjen.',
     'language': 'Språk',
+    'exit.arcade': 'Tilbake til arkaden',
+    'exit.close': 'Lukk',
+    'exit.refused': 'Lukk vinduet selv',
     'level.plate': (n, name) => `${n}. ${name}`,
     'tile.label': (n, name, time) => `Nivå ${n}, ${name}` + (time ? `, klart på ${time}` : ''),
     'hint.device': 'Vipp for å trille kula. Hold brettet slik du vil – da er det flatt.',
@@ -112,6 +115,9 @@ const STRINGS = {
     'nogl.body':
       'This browser will not draw the board (WebGL is off or missing). Try another browser, or turn hardware acceleration back on.',
     'language': 'Language',
+    'exit.arcade': 'Back to arcade',
+    'exit.close': 'Close',
+    'exit.refused': 'Close this window yourself',
     'level.plate': (n, name) => `${n}. ${name}`,
     'tile.label': (n, name, time) => `Level ${n}, ${name}` + (time ? `, done in ${time}` : ''),
     'hint.device': 'Tilt to roll. Hold it however you like: that is level.',

@@ -13,9 +13,9 @@
  * No web fonts (hub §1): a book serif from the system with a real fallback
  * down to `serif`, and no emoji; the tick on a finished maze is drawn.
  *
- * The corner, the volume panel and the arcade exit arrive with the M2 menu
- * floor (DESIGN.md §7); the landscape-phone block at the bottom keeps the
- * cards from running off a sideways phone in the meantime.
+ * The corner and the volume panel arrive with the M2 menu floor (DESIGN.md
+ * §7); the landscape-phone block at the bottom keeps the cards from running
+ * off a sideways phone in the meantime.
  */
 
 :root {
@@ -315,6 +315,53 @@ textarea,
   outline-offset: 3px;
 }
 
+/*
+ * THE WAY BACK TO THE ARCADE (hub §2, "One button"): the last thing on the
+ * start and pause cards. Brass is the way in and walnut the quieter choice;
+ * the way out is neither — no fill at all, just an outline cut into the
+ * plank in the engraving's own ink, because leaving is never the recommended
+ * action. Full column width, set a little further down than the gap between
+ * the other items, so it is never read as one more setting. The arrow is the
+ * hub's shared glyph, stroked like the plate's three bars.
+ */
+.go.exit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  color: var(--ink);
+  text-shadow: 0 1px 0 var(--ink-hi);
+  background: transparent;
+  border: 2px solid rgba(74, 42, 18, 0.7);
+  box-shadow: inset 0 1px 0 var(--ink-hi), 0 1px 0 var(--ink-hi);
+}
+.go.exit:hover {
+  background: rgba(74, 42, 18, 0.08);
+}
+.go.exit:active {
+  transform: translateY(1px);
+  background: rgba(74, 42, 18, 0.14);
+  box-shadow: inset 0 1px 0 var(--ink-hi);
+}
+.go.exit:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+.go.exit[hidden] {
+  display: none;
+}
+.go.exit svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* ---- the picker: every maze a numbered walnut block ---- */
 
 .tiles {
@@ -536,6 +583,10 @@ textarea,
   .seg-btn {
     min-height: 38px;
     padding: 4px 10px;
+  }
+  /* The way out keeps its own line, full width, just less air above it. */
+  .go.exit {
+    margin-top: 12px;
   }
   .tiles {
     grid-template-columns: repeat(9, 1fr);

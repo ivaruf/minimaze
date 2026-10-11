@@ -10,9 +10,12 @@
  *           language row, and the way back to the arcade
  *   picker  every maze as a numbered tile, ticked once finished; none are
  *           locked (DESIGN.md §5: no locked doors)
- *   pause   behind the menu plate: resume, restart, pick a level, "reset
- *           the tilt" when device tilt is live, the language row and the
- *           way back to the arcade. Solo game, so the menu pauses (hub §2).
+ *   pause   the one menu panel, behind the menu plate. In a maze it is
+ *           the Pause face: resume, restart, pick a level, "reset the tilt"
+ *           when device tilt is live. Anywhere else it is the Settings
+ *           face: no Resume, and a Back to the card it was opened over.
+ *           Both faces carry MUSIC and EFFECTS, the language row and the
+ *           way back to the arcade, last. Solo game, so the menu pauses.
  *   clear   "Home!", the time, a new-best line, next level / pick a level
  *
  * The menu words are the hub's shared glossary (§2, "Menus speak plainly"),
@@ -33,16 +36,19 @@
  * ESCAPE is decided by main.js in one place; this file only answers what is
  * showing (current()) and does the step back (pickerBackTo(), quit()).
  *
- * The hub's corner (sound and fullscreen beside the menu plate) and the
- * volume panel arrive with the M2 menu floor.
+ * THE CORNER (hub §2) is three plates on every screen: menu (wired here,
+ * decided by main.js), sound (a live mute, wired here: one tap, nothing
+ * opened, nothing paused), fullscreen (js/screen.js, self-contained).
+ * MiniMaze makes no sound yet, so mute and the two volume rows only
+ * persist (js/store.js) and the panel says plainly that the game is silent.
  */
 
-import { bestTime } from './store.js';
+import { bestTime, volume, setVolume, muted, setMuted } from './store.js';
 import { t, mazeName, setLang, paintStatic } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
-export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onPause }) {
+export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onMenu }) {
   const cards = {
     start: $('start'),
     picker: $('picker'),
@@ -55,10 +61,14 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onP
   const hint = $('hint');
   const tiles = $('picker-tiles');
   let pickerBack = 'start'; // which card the picker's Back returns to
+  let face = 'pause'; // the menu panel's face: 'pause' (in a maze) | 'settings'
+  let settingsFrom = 'start'; // which card the Settings face's Back returns to
 
   function show(name) {
     for (const [k, el] of Object.entries(cards)) el.hidden = k !== name;
-    hud.hidden = name === 'start' || name === 'picker';
+    // The maze's nameplate belongs to a maze: over a run (rolling, paused,
+    // or just cleared), not over the title, the picker or Settings.
+    hud.hidden = !(name === null || name === 'clear' || (name === 'pause' && face === 'pause'));
     const first = name && cards[name].querySelector('button:not([hidden])');
     if (first) first.focus({ preventScroll: true });
   }
@@ -101,7 +111,62 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onP
   });
   $('clear-next').addEventListener('click', () => onPlay(clearNextIndex));
   $('clear-pick').addEventListener('click', () => openPicker('clear'));
-  menuBtn.addEventListener('click', onPause);
+  $('settings-back').addEventListener('click', () => show(settingsFrom));
+  menuBtn.addEventListener('click', onMenu);
+
+  // The menu panel's two faces: one card, so the volumes, the language and
+  // the way out are the same controls in both.
+  function setFace(next, tiltLive) {
+    face = next;
+    const inMaze = face === 'pause';
+    const title = $('pause-title');
+    title.dataset.i18n = inMaze ? 'paused' : 'settings';
+    title.textContent = t(title.dataset.i18n);
+    $('pause-tag').hidden = !inMaze;
+    $('pause-resume').hidden = !inMaze;
+    $('pause-restart').hidden = !inMaze;
+    $('pause-pick').hidden = !inMaze;
+    $('pause-level').hidden = !(inMaze && tiltLive);
+    $('settings-back').hidden = inMaze;
+    cards.pause.classList.toggle('settings', !inMaze);
+  }
+
+  /*
+   * Sound: the corner's mute and the panel's two levels. aria-pressed on the
+   * plate is the state and CSS draws waves or slash off it; the label names
+   * what a press will do, written in the same breath. Moving a slider lifts
+   * the mute — a volume you cannot hear is one you cannot set (hub §2).
+   */
+  const soundBtn = $('sound-btn');
+  let isMuted = muted();
+  function paintMute() {
+    const label = t(isMuted ? 'unmute' : 'mute');
+    soundBtn.setAttribute('aria-pressed', String(isMuted));
+    soundBtn.setAttribute('aria-label', label);
+    soundBtn.title = label;
+  }
+  soundBtn.addEventListener('click', () => {
+    isMuted = !isMuted;
+    setMuted(isMuted);
+    paintMute();
+  });
+  for (const bus of ['music', 'sfx']) {
+    const input = $(`vol-${bus}`);
+    const out = $(`vol-${bus}-out`);
+    const v = Math.round(volume(bus) * 100);
+    input.value = String(v);
+    out.value = String(v);
+    input.addEventListener('input', () => {
+      out.value = input.value;
+      setVolume(bus, Number(input.value) / 100);
+      if (isMuted) {
+        isMuted = false;
+        setMuted(false);
+        paintMute();
+      }
+    });
+  }
+  paintMute();
 
   let clearNextIndex = 0;
   let hintTimer = 0;
@@ -129,6 +194,7 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onP
     b.addEventListener('click', () => setLang(b.dataset.lang));
   }
   document.addEventListener('arcade:lang', () => {
+    paintMute();
     paintLevel();
     paintClear();
     if (!cards.picker.hidden) {
@@ -218,10 +284,20 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onP
     showStart: () => show('start'),
     hideCards: () => show(null),
     showPause(tiltLive) {
-      $('pause-level').hidden = !tiltLive;
+      setFace('pause', tiltLive);
       show('pause');
     },
-    paused: () => !cards.pause.hidden,
+    // The menu plate away from a maze: the same panel, Settings face, over
+    // whichever card was showing.
+    showSettings() {
+      settingsFrom = current() || 'start';
+      setFace('settings');
+      show('pause');
+    },
+    inSettings: () => !cards.pause.hidden && face === 'settings',
+    // The Settings face's Back, for Escape and the plate.
+    settingsBack: () => show(settingsFrom),
+    paused: () => !cards.pause.hidden && face === 'pause',
     anyCard: () => Object.values(cards).some((c) => !c.hidden),
     setLevel(i) {
       levelShown = i;

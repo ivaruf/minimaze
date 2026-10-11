@@ -51,12 +51,6 @@
     <div id="ui">
       <div id="hud" hidden>
         <span id="level-name" class="plate"></span>
-        <!-- The menu plate: three bars, not a gear, because it holds the way
-             back into the maze as well as the settings (hub §2). The glyph is
-             the hub's exact path. Sound and fullscreen join it in M2. -->
-        <button id="menu-btn" class="icon-button" type="button" aria-label="Meny" title="Meny" data-i18n-label="menu">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-        </button>
       </div>
       <p id="hint" aria-live="polite"></p>
 
@@ -136,40 +130,71 @@
         </div>
       </section>
 
+      <!--
+        THE MENU PANEL, the one door behind the three-bar plate (hub §2,
+        "The corner"). Two faces of one card, chosen by js/ui.js:
+          in a maze   "Pause": Resume, re-level, restart, pick a level
+          elsewhere   "Settings": the same panel without Resume, and a Back
+                      to the card it was opened over
+        Both carry the two volume rows, the language row, and the way back
+        to the arcade last. There is no separate sound panel.
+      -->
       <section id="pause" class="card" hidden>
-        <h2 data-i18n="paused">Pause</h2>
-        <p class="tag" data-i18n="pause.tag">Kula venter der du forlot den.</p>
-        <div class="actions">
+        <div class="menu-head">
+          <h2 id="pause-title" data-i18n="paused">Pause</h2>
+          <p id="pause-tag" class="tag" data-i18n="pause.tag">Kula venter der du forlot den.</p>
+        </div>
+        <div class="actions menu-actions">
           <button id="pause-resume" class="go" type="button" data-i18n="resume">Fortsett</button>
           <button id="pause-level" class="go alt" type="button" hidden data-i18n="calibrate">Nullstill tiltingen</button>
           <button id="pause-restart" class="go alt" type="button" data-i18n="restart">Start på nytt</button>
           <button id="pause-pick" class="go alt" type="button" data-i18n="pick">Velg nivå</button>
+          <button id="settings-back" class="go alt" type="button" hidden data-i18n="back">Tilbake</button>
         </div>
-        <div class="lang-row">
-          <span class="lang-caption" data-i18n="language">Språk</span>
-          <div class="seg" role="group" data-i18n-label="language" aria-label="Språk">
-            <button type="button" class="seg-btn" data-lang="nb" aria-pressed="true" lang="nb">
-              <svg class="flag" viewBox="0 0 22 16" aria-hidden="true">
-                <rect width="22" height="16" fill="#ba0c2f"/>
-                <path d="M6 0h4v16H6zM0 6h22v4H0z" fill="#fff"/>
-                <path d="M7 0h2v16H7zM0 7h22v2H0z" fill="#00205b"/>
-              </svg>
-              <span>Norsk</span>
-            </button>
-            <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" lang="en">
-              <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
-                <clipPath id="uk-clip-pause"><path d="M0 0v30h60V0z"/></clipPath>
-                <clipPath id="uk-diag-pause"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
-                <g clip-path="url(#uk-clip-pause)">
-                  <path d="M0 0v30h60V0z" fill="#012169"/>
-                  <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
-                  <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-diag-pause)" stroke="#c8102e" stroke-width="4"/>
-                  <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
-                  <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
-                </g>
-              </svg>
-              <span>English</span>
-            </button>
+        <div class="menu-settings">
+          <!--
+            MUSIC and EFFECTS (hub §2, "Two volumes"). MiniMaze has no sound
+            yet, so the hint line says so plainly; the levels are stored for
+            real (js/store.js), so the day sound arrives it arrives at the level
+            its listener already chose.
+          -->
+          <div class="vol-row">
+            <label for="vol-music" data-i18n="music">Musikk</label>
+            <input id="vol-music" type="range" min="0" max="100" step="5" value="80" />
+            <output id="vol-music-out" for="vol-music">80</output>
+          </div>
+          <div class="vol-row">
+            <label for="vol-sfx" data-i18n="sfx">Effekter</label>
+            <input id="vol-sfx" type="range" min="0" max="100" step="5" value="80" />
+            <output id="vol-sfx-out" for="vol-sfx">80</output>
+          </div>
+          <p class="vol-hint" data-i18n="sound.silent">MiniMaze har ingen lyd ennå.</p>
+          <div class="lang-row">
+            <span class="lang-caption" data-i18n="language">Språk</span>
+            <div class="seg" role="group" data-i18n-label="language" aria-label="Språk">
+              <button type="button" class="seg-btn" data-lang="nb" aria-pressed="true" lang="nb">
+                <svg class="flag" viewBox="0 0 22 16" aria-hidden="true">
+                  <rect width="22" height="16" fill="#ba0c2f"/>
+                  <path d="M6 0h4v16H6zM0 6h22v4H0z" fill="#fff"/>
+                  <path d="M7 0h2v16H7zM0 7h22v2H0z" fill="#00205b"/>
+                </svg>
+                <span>Norsk</span>
+              </button>
+              <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" lang="en">
+                <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+                  <clipPath id="uk-clip-pause"><path d="M0 0v30h60V0z"/></clipPath>
+                  <clipPath id="uk-diag-pause"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
+                  <g clip-path="url(#uk-clip-pause)">
+                    <path d="M0 0v30h60V0z" fill="#012169"/>
+                    <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
+                    <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-diag-pause)" stroke="#c8102e" stroke-width="4"/>
+                    <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
+                    <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
+                  </g>
+                </svg>
+                <span>English</span>
+              </button>
+            </div>
           </div>
         </div>
         <button id="pause-exit" class="go exit" type="button" hidden>
@@ -196,6 +221,35 @@
           maskinvareakselerasjon igjen.
         </p>
       </section>
+
+      <!--
+        THE CORNER (hub §2): menu, sound, fullscreen, left to right, on every
+        screen — the title, a maze, the clear card. Three kinds of thing:
+        fullscreen changes the window, sound changes the sound, and only the
+        menu touches the game. The glyphs are the hub's exact paths; CSS
+        picks each toggle's picture off aria-pressed, which js/ui.js and
+        js/screen.js write in the same breath as the label.
+      -->
+      <div id="corner">
+        <button id="menu-btn" class="icon-button" type="button" aria-label="Meny" title="Meny" data-i18n-label="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+        <!-- A live mute: one tap, nothing opened, nothing paused. -->
+        <button id="sound-btn" class="icon-button" type="button" aria-pressed="false" aria-label="Lyd av" title="Lyd av">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 5 6 9H3v6h3l5 4Z" />
+            <path class="icon-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" />
+            <path class="icon-slash" d="m15.5 9.5 6 5m0-5-6 5" />
+          </svg>
+        </button>
+        <!-- Hidden until js/screen.js finds a working request/exit pair. -->
+        <button id="screen-toggle" class="icon-button" type="button" aria-pressed="false" aria-label="Fullskjerm" title="Fullskjerm" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="icon-expand" d="M9 3H3v6m12-6h6v6M3 15v6h6m12-6v6h-6" />
+            <path class="icon-contract" d="M3 9h6V3M21 9h-6V3M3 15h6v6M21 15h-6v6" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!--
@@ -258,6 +312,8 @@
       fails, and the button that fetches a fix must not die with what it fixes.
     -->
     <script type="module" src="js/update.js"></script>
+    <!-- The fullscreen plate, self-contained for the same reason. -->
+    <script type="module" src="js/screen.js"></script>
     <script type="module" src="js/main.js"></script>
   </body>
 </html>

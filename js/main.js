@@ -12,10 +12,10 @@
  * The physics reads the eased tilt, not the target, so what you see the
  * board doing is what is rolling the ball.
  *
- * Still to come in M2 (DESIGN.md §7–8): the hub's corner (sound,
- * fullscreen) and sound itself. The way back to the arcade is drawn by
- * ui.js and looked for from the bottom of this file. The service worker
- * is not wired from here at all: js/update.js owns it, in a module graph of
+ * Still to come in M2 (DESIGN.md §7–8): sound itself. The corner (menu,
+ * mute, fullscreen) and the way back to the arcade are drawn by ui.js and
+ * js/screen.js; what the menu plate does is decided here, by escape().
+ * The service worker is not wired from here at all: js/update.js owns it, in a module graph of
  * its own.
  */
 
@@ -96,7 +96,8 @@ const ui = createUI({
     playing = true;
   },
   onCalibrate: () => tilt.calibrate(),
-  onPause: pause,
+  // The menu plate is Escape: one step, the same in every state.
+  onMenu: () => escape(true),
 });
 
 function pause() {
@@ -156,6 +157,7 @@ try {
  *   picker open        -> the picker's own Back (to whichever card opened it)
  *   rolling            -> open the pause card; the marble stops
  *   pause card open    -> close it; the marble rolls on from where it was
+ *   Settings face open -> its Back, to the card it was opened over
  *   clear card         -> the start card, the nearest screen with the way
  *                         out on it (the clear card has none of its own)
  *   start card         -> exactly the Back to arcade button: the same quit(),
@@ -168,12 +170,19 @@ try {
  * ever sees an Escape; preventDefault for the browser's own. A held key
  * auto-repeats, which would flicker pause on and off, so repeats are eaten
  * too. P keeps its old job as a pause toggle; C still re-levels the tilt.
+ *
+ * The menu plate runs this same function, with one difference away from a
+ * maze: where Escape would leave or walk back (the start card, the clear
+ * card, the picker), the plate opens the menu panel's Settings face
+ * instead, and a second press is that face's Back.
  */
-function escape() {
+function escape(fromPlate = false) {
   const card = ui.current();
-  if (card === 'picker') ui.pickerBackTo();
-  else if (playing) pause();
+  if (playing) pause();
+  else if (ui.inSettings()) ui.settingsBack();
   else if (card === 'pause') resume();
+  else if (fromPlate) ui.showSettings();
+  else if (card === 'picker') ui.pickerBackTo();
   else if (card === 'clear') ui.showStart();
   else if (card === 'start' && ui.exitShown()) ui.quit();
 }

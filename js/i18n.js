@@ -4,7 +4,7 @@
  * The hub's contract (CLAUDE.md §2, "Two languages, Norwegian first"):
  * bokmål and English, Norwegian by default whatever the browser prefers,
  * one choice for the whole arcade stored as `arcade.lang.v1`, switched live
- * from a row on the title card and in the pause menu. kitchens/js/i18n.js
+ * from a row on the title card and in the menu panel. kitchens/js/i18n.js
  * worked the mechanism out; this is the same shape without its browser
  * sniffing and its own key.
  *
@@ -47,6 +47,12 @@ const STRINGS = {
   nb: {
     'board.label': 'Labyrintbrettet',
     'menu': 'Meny',
+    'settings': 'Innstillinger',
+    'music': 'Musikk',
+    'sfx': 'Effekter',
+    'sound.silent': 'MiniMaze har ingen lyd ennå. Nivåene blir husket til den kommer.',
+    'mute': 'Lyd av',
+    'unmute': 'Lyd på',
     'start.tag': 'Vipp brettet. Pass deg for hullene.',
     'play': 'Spill',
     'pick': 'Velg nivå',
@@ -96,6 +102,12 @@ const STRINGS = {
   en: {
     'board.label': 'The maze board',
     'menu': 'Menu',
+    'settings': 'Settings',
+    'music': 'Music',
+    'sfx': 'Effects',
+    'sound.silent': 'MiniMaze has no sound yet. The levels are kept for when it does.',
+    'mute': 'Mute',
+    'unmute': 'Unmute',
     'start.tag': 'Tilt the board. Mind the holes.',
     'play': 'Play',
     'pick': 'Pick a level',

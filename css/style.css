@@ -13,9 +13,9 @@
  * No web fonts (hub §1): a book serif from the system with a real fallback
  * down to `serif`, and no emoji; the tick on a finished maze is drawn.
  *
- * The corner and the volume panel arrive with the M2 menu floor (DESIGN.md
- * §7); the landscape-phone block at the bottom keeps the cards from running
- * off a sideways phone in the meantime.
+ * The corner — menu, sound, fullscreen — is three brass knobs fixed top
+ * right on every screen (hub §2), and every card keeps clear of it: below
+ * it on a tall screen, beside it on a sideways phone (--corner-room).
  */
 
 :root {
@@ -33,6 +33,10 @@
   --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial, sans-serif;
   --tap: 48px;
+  /* What the corner takes from the top right: three plates, two gaps, the
+     12px inset, and a little air. Cards and the HUD keep out of it. */
+  --corner-gap: 8px;
+  --corner-room: calc(3 * var(--tap) + 2 * var(--corner-gap) + 24px);
   color-scheme: dark;
 }
 
@@ -105,14 +109,25 @@ textarea,
   position: absolute;
   top: calc(env(safe-area-inset-top, 0px) + 10px);
   left: calc(env(safe-area-inset-left, 0px) + 12px);
-  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + var(--corner-room));
+  min-height: var(--tap);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   pointer-events: none;
 }
 #hud > * {
+  pointer-events: auto;
+}
+
+/* THE CORNER: menu, sound, fullscreen, left to right, over every card. */
+#corner {
+  position: absolute;
+  z-index: 2;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
+  display: flex;
+  gap: var(--corner-gap);
   pointer-events: auto;
 }
 
@@ -163,6 +178,14 @@ textarea,
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+/* Each toggle carries both pictures; aria-pressed picks one, so what is
+   drawn and what a screen reader hears cannot drift. */
+#sound-btn[aria-pressed="true"] .icon-waves,
+#sound-btn:not([aria-pressed="true"]) .icon-slash,
+#screen-toggle[aria-pressed="true"] .icon-expand,
+#screen-toggle:not([aria-pressed="true"]) .icon-contract {
+  display: none;
+}
 .icon-button:focus-visible {
   outline: 3px solid var(--birch);
   outline-offset: 3px;
@@ -209,7 +232,8 @@ textarea,
   top: 50%;
   transform: translate(-50%, -50%);
   width: min(360px, calc(100% - 32px));
-  max-height: calc(100% - 32px);
+  /* Centred, but clear of the corner above and the same again below. */
+  max-height: calc(100% - 2 * (var(--tap) + 22px));
   overflow: auto; /* a safety net on very short viewports, not a plan */
   padding: 26px 26px 24px;
   text-align: center;
@@ -485,6 +509,94 @@ textarea,
 }
 
 /*
+ * THE MENU PANEL's two volume rows (hub §2, "Two volumes"): an engraved
+ * caption, a brass rail with a brass knob, and the number beside it. The
+ * captions share one gutter so both rails start at the same x.
+ */
+.menu-settings {
+  margin-top: 16px;
+}
+.vol-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+.vol-row label {
+  flex: 0 0 5.6em;
+  text-align: left;
+  font: italic 700 0.95rem var(--serif);
+  color: var(--ink);
+  text-shadow: 0 1px 0 var(--ink-hi);
+}
+.vol-row output {
+  flex: 0 0 2.2em;
+  text-align: right;
+  font: 700 0.95rem var(--serif);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.vol-row input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 40px;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.vol-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wood-dark) center / 240px, #6a3e1f;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0 var(--ink-hi);
+}
+.vol-row input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #6a3e1f;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0 var(--ink-hi);
+}
+.vol-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6d98c, #c8922f 55%, #8f6420);
+  border: 1px solid #6e4a14;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.45);
+}
+.vol-row input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f6d98c, #c8922f 55%, #8f6420);
+  border: 1px solid #6e4a14;
+}
+.vol-row input[type="range"]:focus-visible {
+  outline: 3px solid #2a1a0c;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* In the menu panel the language caption sits on the volume captions'
+   edge: above its two blocks on a tall screen, where "English" needs the
+   whole width, and in their gutter on a sideways phone (below). */
+.menu-settings .lang-row {
+  margin-top: 10px;
+}
+.menu-settings .lang-caption {
+  text-align: left;
+}
+.vol-hint {
+  margin: 2px 0 0;
+  font: italic 0.85rem/1.3 var(--serif);
+  color: #6a4020;
+  text-shadow: 0 1px 0 var(--ink-hi);
+}
+
+/*
  * UPDATE READY (js/update.js), on the title card only. A notice pinned to the
  * plank rather than another brass button: it is not a way into a maze, so it
  * must not look like one, and it sits below the two that are. A dashed brass
@@ -533,17 +645,25 @@ textarea,
 }
 
 /*
- * A phone on its side: 300–430px tall. Titles shrink, the actions stand side
- * by side as equals, and the picker spreads into fewer, wider rows. The full
- * landscape grid (maxgear's shape) comes with the M2 menu floor.
+ * A phone on its side: 300–430px tall. The corner is beside the cards here
+ * rather than above them, so every card is centred in what is left once
+ * --corner-room is taken off the right, and may use nearly the full height.
+ * Titles shrink, the start card's actions stand side by side as equals, the
+ * menu panel becomes two columns laid over the same markup by grid area
+ * (maxgear's shape), and the picker spreads into fewer, wider rows.
  */
 @media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --tap: 44px;
+  }
   .card {
+    left: calc(50% - var(--corner-room) / 2);
+    max-height: calc(100% - 20px);
     padding: 14px 20px 14px;
-    width: min(520px, calc(100% - 32px));
+    width: min(520px, calc(100% - 32px - var(--corner-room)));
   }
   .card.wide {
-    width: min(720px, calc(100% - 32px));
+    width: min(720px, calc(100% - 32px - var(--corner-room)));
   }
   .card h1 {
     font-size: 2rem;
@@ -562,10 +682,53 @@ textarea,
     padding: 6px 12px;
     font-size: 1.05rem;
   }
-  /* The pause card's four actions stand in one row, so the language row
-     fits under them; the caption moves beside its two blocks. */
+  /* The menu panel: title and actions down the left, the volumes and the
+     language down the right, the way out under them. */
   #pause {
-    width: min(720px, calc(100% - 32px));
+    width: min(680px, calc(100% - 32px - var(--corner-room)));
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    grid-template-areas:
+      "head set"
+      "act  set"
+      "act  exit";
+    grid-template-rows: auto auto 1fr;
+    column-gap: 22px;
+    align-content: start;
+    align-items: start;
+  }
+  #pause .menu-head {
+    grid-area: head;
+  }
+  #pause .menu-actions {
+    grid-area: act;
+    grid-template-columns: none;
+  }
+  #pause .menu-settings {
+    grid-area: set;
+    margin-top: 0;
+  }
+  #pause .go.exit {
+    grid-area: exit;
+    align-self: end;
+  }
+  .vol-row {
+    min-height: 36px;
+  }
+  /* One gutter for all three captions in the right column. */
+  .vol-row label,
+  .menu-settings .lang-caption {
+    flex: 0 0 4.6em;
+  }
+  .menu-settings .seg {
+    min-width: 0;
+  }
+  .menu-settings .seg-btn {
+    gap: 6px;
+    padding: 4px 8px;
+  }
+  .vol-row input[type="range"] {
+    height: 36px;
   }
   .lang-row {
     display: flex;

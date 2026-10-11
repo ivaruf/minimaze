@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.3.1'; // the way back to the arcade on the start and pause cards; Escape walks one step toward it
+const VERSION = 'v0.4.0'; // the corner's three plates on every screen, one menu panel with the volumes and the language
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is
@@ -40,6 +40,7 @@ const ASSETS = [
   './css/style.css',
   './js/update.js',
   './js/touch-guard.js',
+  './js/screen.js',
   './js/main.js',
   './js/config.js',
   './js/levels.js',

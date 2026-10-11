@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.4.1'; // precache reads past the browser's HTTP cache, so an update can never mix old and new files
+const VERSION = 'v0.4.2'; // the language row lives in the menu panel only; the title card keeps the ways in and the way out
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is

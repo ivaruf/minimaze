@@ -188,7 +188,7 @@ export function createUI({ levels, onPlay, onResume, onRestart, onCalibrate, onM
     $('clear-next').textContent = t(i === levels.length - 1 ? 'fromStart' : 'next');
   }
 
-  // The language rows, on the title card and in the pause card. setLang
+  // The language row, in the menu panel only (hub §2, Where). setLang
   // repaints every [data-i18n] itself; the rest is repainted below.
   for (const b of document.querySelectorAll('[data-lang]')) {
     b.addEventListener('click', () => setLang(b.dataset.lang));

@@ -63,38 +63,6 @@
           <button id="start-go" class="go" type="button" data-i18n="play">Spill</button>
           <button id="start-pick" class="go alt" type="button" data-i18n="pick">Velg nivå</button>
         </div>
-        <!-- The language, before any maze: the stranger who cannot read the
-             Norwegian this opened in needs it here most (hub §2). The same
-             row sits in the pause card; each copy has its own clipPath ids,
-             because ids are page-global and a second Union Jack would clip
-             against the first. -->
-        <div class="lang-row">
-          <span class="lang-caption" data-i18n="language">Språk</span>
-          <div class="seg" role="group" data-i18n-label="language" aria-label="Språk">
-            <button type="button" class="seg-btn" data-lang="nb" aria-pressed="true" lang="nb">
-              <svg class="flag" viewBox="0 0 22 16" aria-hidden="true">
-                <rect width="22" height="16" fill="#ba0c2f"/>
-                <path d="M6 0h4v16H6zM0 6h22v4H0z" fill="#fff"/>
-                <path d="M7 0h2v16H7zM0 7h22v2H0z" fill="#00205b"/>
-              </svg>
-              <span>Norsk</span>
-            </button>
-            <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" lang="en">
-              <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
-                <clipPath id="uk-clip-start"><path d="M0 0v30h60V0z"/></clipPath>
-                <clipPath id="uk-diag-start"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath>
-                <g clip-path="url(#uk-clip-start)">
-                  <path d="M0 0v30h60V0z" fill="#012169"/>
-                  <path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/>
-                  <path d="M0 0l60 30m0-30L0 30" clip-path="url(#uk-diag-start)" stroke="#c8102e" stroke-width="4"/>
-                  <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/>
-                  <path d="M30 0v30M0 15h60" stroke="#c8102e" stroke-width="6"/>
-                </g>
-              </svg>
-              <span>English</span>
-            </button>
-          </div>
-        </div>
         <!--
           UPDATE READY. Hidden until a new service worker has installed and
           is waiting; tapping it is the only thing in the game that posts

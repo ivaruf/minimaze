@@ -14,8 +14,8 @@ ticks and best times; a pause card; wooden menus. Installable and playable
 offline: a manifest, icons, and a cache-first service worker that waits for
 a tap on UPDATE READY before taking a new build. The hub's corner (menu,
 mute, fullscreen) on every screen, one menu panel with MUSIC and EFFECTS,
-the language and the way back to the arcade, and Norwegian or English
-from the title card. No sound yet; that is the rest of M2 (DESIGN.md §8). Not deployed.
+the language and the way back to the arcade, Norwegian or English one tap
+behind the bars on the title card. No sound yet; that is the rest of M2 (DESIGN.md §8). Not deployed.
 
 ## Releasing
 

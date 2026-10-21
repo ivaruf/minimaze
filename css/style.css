@@ -780,6 +780,23 @@ textarea,
   }
 }
 
+/*
+ * The opening sting: js/intro.js's canvas, which the script creates and
+ * removes. Above everything — the cards, the corner's knobs — because for
+ * its three seconds it is a curtain over the whole page; a tap anywhere on
+ * it skips, and touch-action keeps that tap from becoming a scroll or a
+ * zoom. Reduced motion never creates it at all.
+ */
+#intro {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  touch-action: none;
+  cursor: pointer;
+}
+
 #crash {
   position: fixed;
   left: 0;

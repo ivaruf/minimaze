@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.4.3'; // the update button always lands: a reload follows the tap even when controllerchange never comes
+const VERSION = 'v0.5.0'; // an opening sting: the marble rolls the S and drops into the cup before the curtain lifts onto the board
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is
@@ -40,6 +40,7 @@ const ASSETS = [
   './css/style.css',
   './js/update.js',
   './js/touch-guard.js',
+  './js/intro.js',
   './js/screen.js',
   './js/main.js',
   './js/config.js',

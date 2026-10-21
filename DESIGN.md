@@ -69,6 +69,7 @@ minimaze/
     update.js              SW registration + UPDATE READY (self-contained)     [assets]
     screen.js              fullscreen + orientation lock (self-contained)       [assets]
     touch-guard.js         classic script, from lobbots                         [assets]
+    intro.js               opening sting; classic, async, self-contained        [assets]
   audio/*.m4a              rendered cues                                         [assets]
   icons/                   192, 512, 512-maskable, 180                           [assets]
   tools/

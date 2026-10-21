@@ -46,6 +46,19 @@
     <script src="../arcade/exit.js" defer data-handled="optional"></script>
   </head>
   <body>
+    <!--
+      The opening sting: the board settles, the marble rolls the S and drops
+      into the cup — about three seconds, skipped by any tap or key; see the
+      file. ASYNC AND FIRST IN THE BODY, not deferred in the head: a deferred
+      script waits for the whole document, and the point is to be running
+      before the module graph is, so that its capture-phase key listener is
+      registered ahead of every one of the game's. Async never blocks the
+      parser, so the game boots underneath exactly as before; the sting is a
+      curtain over it (css/style.css #intro), and with reduced motion it does
+      nothing. data-handled: missing, it is nothing the crash bar should
+      report — the game is whole without it.
+    -->
+    <script src="js/intro.js" async data-handled="optional"></script>
     <canvas id="view" aria-label="Labyrintbrettet" data-i18n-aria="board.label"></canvas>
 
     <div id="ui">

@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.5.1'; // a held P no longer flickers the pause, the precache answers only from its own cache, and the calibrate button says vippingen
+const VERSION = 'v0.5.2'; // sliders keep their arrows, a Cmd chord or a lost capture leaves the board level, no shake under reduced motion, and the exit still loads offline
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is
@@ -115,7 +115,10 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE).then((c) => c.put(request, copy));
         }
         return res;
-      }).catch(() => (request.mode === 'navigate' ? caches.match('./index.html', { cacheName: CACHE }) : undefined));
+      }).catch(() => (request.mode === 'navigate'
+        ? caches.match('./index.html', { cacheName: CACHE })
+        // Offline: ../arcade/exit.js is not ours to precache, so any cache's copy will do.
+        : caches.match(request, { ignoreSearch: true })));
     })
   );
 });

@@ -57,10 +57,13 @@ export function attach(surface) {
   };
   surface.addEventListener('pointerup', end);
   surface.addEventListener('pointercancel', end);
+  surface.addEventListener('lostpointercapture', end);
 
   window.addEventListener('keydown', (e) => {
     const k = KEYMAP[e.code];
     if (!k) return;
+    // A slider keeps its own arrows, and macOS never sends the keyup of a Cmd chord.
+    if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest?.('input')) return;
     keys.add(k);
     e.preventDefault(); // arrows would scroll a page that should not move
   });
@@ -70,6 +73,9 @@ export function attach(surface) {
   });
   // A key held while focus leaves would stay "down" forever.
   window.addEventListener('blur', () => keys.clear());
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) keys.clear();
+  });
 }
 
 export function dragging() {

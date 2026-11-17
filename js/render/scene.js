@@ -28,7 +28,6 @@ const MARGIN = 0.9; // fraction of the screen the board may fill
 
 export function createScene(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // hub §10
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -81,6 +80,8 @@ export function createScene(canvas) {
    * repeat; three passes settle it to a pixel.
    */
   function fit(w, h, board, yaw) {
+    // Read every time: a window dragged to another screen changes it.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // hub §10
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     halfW = board.cols / 2;
@@ -121,8 +122,11 @@ export function createScene(canvas) {
 
   // A knock against a wall nudges the camera, never more than a few
   // hundredths of a cell, and it settles in a fraction of a second.
+  // And not at all for a player who has asked the screen to keep still.
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let shake = 0;
   function nudge(amount) {
+    if (reduced.matches) return;
     shake = Math.min(0.06, shake + amount);
   }
 

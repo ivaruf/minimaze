@@ -50,7 +50,7 @@ const STRINGS = {
     'settings': 'Innstillinger',
     'music': 'Musikk',
     'sfx': 'Effekter',
-    'sound.silent': 'MiniMaze har ingen lyd ennå. Nivåene blir husket til den kommer.',
+    'sound.silent': 'MiniMaze har ingen lyd ennå. Volumet blir husket til den kommer.',
     'mute': 'Lyd av',
     'unmute': 'Lyd på',
     'start.tag': 'Vipp brettet. Pass deg for hullene.',

@@ -60,7 +60,7 @@ const STRINGS = {
     'paused': 'Pause',
     'pause.tag': 'Kula venter der du forlot den.',
     'resume': 'Fortsett',
-    'calibrate': 'Nullstill tiltingen',
+    'calibrate': 'Nullstill vippingen',
     'restart': 'Start på nytt',
     'clear.title': 'I mål!',
     'clear.time': (time) => `Trillet i mål på ${time}`,

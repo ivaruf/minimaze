@@ -24,7 +24,7 @@
 // All paths are RELATIVE: the game is served from /minimaze/ and is also
 // framed by the arcade from a sibling directory.
 
-const VERSION = 'v0.5.0'; // an opening sting: the marble rolls the S and drops into the cup before the curtain lifts onto the board
+const VERSION = 'v0.5.1'; // a held P no longer flickers the pause, the precache answers only from its own cache, and the calibrate button says vippingen
 const CACHE = `minimaze-${VERSION}`;
 
 // Every shipped file. install blocks until all of it is cached, so this list is
@@ -107,7 +107,7 @@ self.addEventListener('fetch', (event) => {
   // be from different builds. New versions arrive as a whole new cache through
   // install/activate above, never file by file.
   event.respondWith(
-    caches.match(request, { ignoreSearch: true }).then((hit) => {
+    caches.match(request, { cacheName: CACHE, ignoreSearch: true }).then((hit) => {
       if (hit) return hit;
       return fetch(request).then((res) => {
         if (res.ok && res.type === 'basic') {
@@ -115,7 +115,7 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE).then((c) => c.put(request, copy));
         }
         return res;
-      }).catch(() => (request.mode === 'navigate' ? caches.match('./index.html') : undefined));
+      }).catch(() => (request.mode === 'navigate' ? caches.match('./index.html', { cacheName: CACHE }) : undefined));
     })
   );
 });

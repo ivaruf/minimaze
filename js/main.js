@@ -198,7 +198,7 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (e.code === 'KeyC') tilt.calibrate();
-  if (e.code === 'KeyP') {
+  if (e.code === 'KeyP' && !e.repeat) {
     if (playing) pause();
     else if (ui.paused()) resume();
   }
